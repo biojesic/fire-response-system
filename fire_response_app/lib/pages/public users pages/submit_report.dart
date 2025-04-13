@@ -2,8 +2,6 @@ import 'package:fire_response_app/provider/submit_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
 
 class SubmitReportPage extends StatefulWidget {
   @override
@@ -17,7 +15,6 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
   final descriptionController = TextEditingController();
 
   // Coordinates
-  LatLng? firestationLatLng;
   double? existingLatitude;
   double? existingLongitude;
 
@@ -37,9 +34,9 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
       listen: false,
     );
 
-    // Ensure we have valid coordinates before submitting
-    double? latitude = firestationLatLng?.latitude ?? existingLatitude;
-    double? longitude = firestationLatLng?.longitude ?? existingLongitude;
+    // Use the coordinates that are already available
+    double? latitude = existingLatitude;
+    double? longitude = existingLongitude;
 
     if (latitude == null || longitude == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,13 +63,7 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
               landmarkController.clear();
             });
           },
-          geocodedLocation:
-              firestationLatLng != null
-                  ? {
-                    'latitude': firestationLatLng!.latitude,
-                    'longitude': firestationLatLng!.longitude,
-                  }
-                  : null,
+          geocodedLocation: null, // No need to pass coordinates from here
           existingLatitude: latitude,
           existingLongitude: longitude,
         );

@@ -19,7 +19,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('firereports', FireReportsController::class)->middleware('auth:sanctum');
+Route::apiResource('firereports', FireReportsController::class);
 Route::get('/firereports/{reported_by}/user', [FireReportsController::class, 'getUserReports'])->middleware('auth:sanctum');
 Route::post('/quick-report', [FireReportsController::class, 'quickReport'])->middleware('auth:sanctum');
 

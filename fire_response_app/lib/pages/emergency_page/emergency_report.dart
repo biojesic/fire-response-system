@@ -1,6 +1,9 @@
 import 'dart:io';
+// import 'package:fire_response_app/provider/fire_report_provider.dart';
+import 'package:fire_response_app/provider/submit_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class EmergencyReport extends StatefulWidget {
   const EmergencyReport({super.key});
@@ -147,7 +150,34 @@ class _EmergencyReportState extends State<EmergencyReport> {
                         width: 250,
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: submitFireReport,
+                          onPressed: () {
+                            final provider = Provider.of<SubmitReportProvider>(
+                              context,
+                              listen: false,
+                            );
+                            provider.submitFireReportUnauthenticated(
+                              context,
+                              formKey: _formKey,
+                              locationController: locationController,
+                              landmarkController: landmarkController,
+                              descriptionController: descriptionController,
+                              contactinfoController: contactinfoController,
+                              clearFields: () {
+                                setState(() {
+                                  locationController.clear();
+                                  landmarkController.clear();
+                                  descriptionController.clear();
+                                  contactinfoController.clear();
+                                  _image = null;
+                                });
+                              },
+                              geocodedLocation:
+                                  null, // Optional: Set to null if backend handles it
+                              existingLatitude:
+                                  null, // Optional: Set to null if not needed
+                              existingLongitude: null,
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                           ),

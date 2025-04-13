@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:fire_response_app/api.dart';
@@ -19,9 +19,7 @@ class SubmitReportProvider extends ChangeNotifier {
     geocodedLocation, // Pass the geocodedLocation as a parameter
     required double? existingLatitude, // Optional, in case coordinates exist
     required double? existingLongitude, // Optional, in case coordinates exist
-
   }) async {
-    
     const String api = API.baseUrl;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.token;
@@ -91,6 +89,72 @@ class SubmitReportProvider extends ChangeNotifier {
       }
     } else {
       print("⚠️ Error: Form is invalid or userId is null");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill out all required fields.')),
+      );
+    }
+  }
+
+  Future<void> submitFireReportUnauthenticated(
+    BuildContext context, {
+    required GlobalKey<FormState> formKey,
+    required TextEditingController locationController,
+    required TextEditingController landmarkController,
+    required TextEditingController descriptionController,
+    required TextEditingController contactinfoController,
+    required Map<String, double>? geocodedLocation,
+    required double? existingLatitude,
+    required double? existingLongitude,
+
+    required Function clearFields,
+  }) async {
+    const String api = API.baseUrl;
+
+    if (formKey.currentState!.validate()) {
+      try {
+        final url = Uri.parse('$api/firereports');
+
+        final response = await http.post(
+          url,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'location': locationController.text,
+            'landmark': landmarkController.text,
+            'description': descriptionController.text,
+            'contact_info': contactinfoController.text,
+            // ❌ remove lat/long since backend handles it
+          }),
+        );
+
+        if (response.statusCode == 201) {
+          print("✅ Fire report submitted successfully!");
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Fire report submitted!')));
+          clearFields();
+        } else {
+          print("❌ Error submitting fire report: ${response.body}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to submit report. Please try again.'),
+            ),
+          );
+        }
+      } catch (e) {
+        print("❌ Exception: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'An error occurred. Please check your internet connection.',
+            ),
+          ),
+        );
+      }
+    } else {
+      print("⚠️ Form is invalid");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill out all required fields.')),
       );
