@@ -122,6 +122,7 @@ class FireReportsController extends Controller
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'contact_info' => 'nullable|string|max:255', // For guests
+            'reported_by' => 'nullable|exists:users,id', //for authenticated users
         ]);
 
         // Ensure latitude & longitude are set

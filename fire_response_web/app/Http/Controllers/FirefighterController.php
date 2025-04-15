@@ -182,20 +182,20 @@ class FirefighterController extends Controller
     public function getStatus($firefighterId)
     {
         $firefighter = Firefighter::with('team')->findOrFail($firefighterId);
-
-        // Gamitin ang status ng firefighter muna
-        if ($firefighter->status === 'Off Duty') {
+    
+        // Always check firefighter's own status first
+        if (strtolower($firefighter->status) === 'off duty') {
             return response()->json(['status' => 'Off Duty'], 200);
         }
-
-        // Kung walang team, ibalik ang "No Team Assigned"
+    
+        // If they're not Off Duty, check their team status
         if (!$firefighter->team) {
-            return response()->json(['status' => 'No Team Assigned'], 404);
+            return response()->json(['status' => 'No Team Assigned'], 200);
         }
-
-        // Ibalik ang status ng team kung hindi "Off Duty" ang firefighter
+    
         return response()->json(['status' => $firefighter->team->status], 200);
     }
+    
 
 
     public function getDetails($id)

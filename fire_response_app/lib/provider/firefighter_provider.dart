@@ -75,7 +75,7 @@ class FirefighterProvider extends ChangeNotifier {
         );
 
         // Extract firefighter position and team name
-        firefighterRole = firefighterData['position']; // "Team Leader"
+        firefighterRole = firefighterData['position']['position_name'] ?? 'No position';
         team =
             firefighterData['team']['teamName'] ??
             'No team assigned'; // "Alpha"
@@ -93,34 +93,38 @@ class FirefighterProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchFirefighterStatus(firefighterId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$api/firefighters/$firefighterId/team-status'),
-      );
+Future<void> fetchFirefighterStatus(firefighterId) async {
+  try {
+    print("🚨 Fetching status for firefighterId: $firefighterId");  // Debugging line
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        String fetchedStatus = data['status']; // Adjust key if necessary
+    final response = await http.get(
+      Uri.parse('$api/firefighters/$firefighterId/status'),
+    );
 
-        // Update the status
-        _status = fetchedStatus;
-        notifyListeners();
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      final String fetchedStatus = data['status'] ?? 'Off Duty';
 
-        // Handle location tracking
-        if (_status == "on_response" || _status == "standby") {
-          print("Starting location tracking...");
-          startLocationTracking(userId);
-        } else {
-          stopLocationTracking();
-        }
+      print("✅ Firefighter status fetched: $fetchedStatus"); // Debugging line
+
+      _status = fetchedStatus;
+      notifyListeners();
+
+      if (_status == "On Response" || _status == "Standby") {
+        print("✅ Starting location tracking...");
+        startLocationTracking(userId);
       } else {
-        throw Exception("Failed to fetch firefighter status:");
+        print("🚫 Location tracking stopped.");
+        stopLocationTracking();
       }
-    } catch (e) {
-      print("Error fetching firefighter status: $e");
+    } else {
+      print("⚠️ Failed to fetch firefighter status. Status: ${response.statusCode}");
+      print("Response Body: ${response.body}"); // Debugging line
     }
+  } catch (e) {
+    print("❌ Error fetching firefighter status: $e");
   }
+}
 
   // ✅ Get Current Location
   static Future<Position> getCurrentLocation() async {

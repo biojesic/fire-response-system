@@ -63,6 +63,9 @@ class SubmitReportProvider extends ChangeNotifier {
 
         if (response.statusCode == 201) {
           print("✅ Fire report submitted successfully!");
+          print("User ID: $userId");
+          print("Token: $token");
+
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Fire report submitted!')));
