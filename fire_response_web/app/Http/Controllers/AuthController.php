@@ -21,11 +21,11 @@ class AuthController extends Controller
         $fields = $request->validate([
             'userFirstName' => 'required|string|max:255',
             'userLastName' => 'required|string|max:255',
-            'userEmail' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users',
             'userContactNumber' => 'nullable|string|max:20',
             'userAddress' => 'required|string|max:100000',
             'userBirthDate' => 'nullable|date',
-            'userPassword' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         // Initialize coordinates
@@ -53,11 +53,11 @@ class AuthController extends Controller
         $user = User::create([
             'userFirstName' => $fields['userFirstName'],
             'userLastName' => $fields['userLastName'],
-            'userEmail' => $fields['userEmail'],
+            'email' => $fields['email'],
             'userContactNumber' => $fields['userContactNumber'],
             'userAddress' => $fields['userAddress'],
             'userBirthDate' => $fields['userBirthDate'],
-            'userPassword' => bcrypt($fields['userPassword']),
+            'password' => bcrypt($fields['password']),
             'userRole' => 'civilian',
             'userStatus' => 'Active',
             'latitude' => $latitude,
@@ -65,7 +65,7 @@ class AuthController extends Controller
         ]);
 
         // Generate token
-        $token = $user->createToken($user->userEmail)->plainTextToken;
+        $token = $user->createToken($user->email)->plainTextToken;
 
         return response()->json([
             'user' => $user,
@@ -77,18 +77,18 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'userEmail' => 'required|email|exists:users,userEmail',
-            'userPassword' => 'required'
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required'
         ]);
 
-        $user = User::where('userEmail', $request->userEmail)->first();
-        if (!$user || !Hash::check($request->userPassword, $user->userPassword)) {
+        $user = User::where('email', $request->email)->first();
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return [
                 'msg' => 'Credentials incorrect.'
             ];
         }
 
-        $token = $user->createToken($request->userEmail)->plainTextToken;
+        $token = $user->createToken($request->email)->plainTextToken;
 
         return response()->json([
             'user' => $user,

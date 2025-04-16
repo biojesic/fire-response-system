@@ -102,7 +102,7 @@ class AuthProvider extends ChangeNotifier {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({"userEmail": email, "userPassword": password}),
+        body: jsonEncode({"email": email, "password": password}),
       );
 
       if (response.statusCode == 201) {
