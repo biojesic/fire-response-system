@@ -53,9 +53,9 @@ class AuthProvider extends ChangeNotifier {
           "Accept": "application/json",
         },
         body: jsonEncode({
-          "userEmail": email,
-          "userPassword": password,
-          "userPassword_confirmation": confirmPassword,
+          "email": email,
+          "password": password,
+          "password_confirmation": confirmPassword,
           "userFirstName": firstname,
           "userLastName": lastname,
           "userAddress": address,
