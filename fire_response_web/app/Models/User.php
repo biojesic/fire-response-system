@@ -59,4 +59,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(FireReports::class, 'reported_by');
     }
+
+    public function fireStation()
+{
+    return $this->belongsTo(FireStation::class);
+}
+
+public function firefighter()
+{
+    return $this->hasOne(Firefighter::class, 'userId');
+}
+
 }

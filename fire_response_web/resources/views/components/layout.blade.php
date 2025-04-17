@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,8 +14,13 @@
             <a href="{{ route('home') }}" class="nav-link">Home</a>
 
             <div class="flex items-center gap-4">
-                <a href="{{ route('login') }}" class="nav-link">Login</a>
-                <a href="{{ route('register') }}" class="nav-link">Register</a>
+                @guest
+                    <a href="{{ route('login') }}" class="nav-link">Login</a>
+                @endguest
+                @auth
+                    <a href="{{ url('firefighters/register') }}" class="nav-link">Register</a>
+                @endauth
+
             </div>
         </nav>
     </header>
@@ -23,4 +29,5 @@
         {{ $slot }}
     </main>
 </body>
+
 </html>

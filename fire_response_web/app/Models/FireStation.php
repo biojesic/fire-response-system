@@ -11,4 +11,8 @@ class FireStation extends Pivot
 
     protected $table = 'fire_station';
     protected $fillable = ['firestationName', 'firestationLocation', 'latitude', 'longitude', 'firestationContactNumber'];
-}
+
+    public function teams() {
+        return $this->hasMany(Team::class, 'fireStationId');
+    }
+}   
