@@ -169,4 +169,38 @@ class AuthProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  Future<int?> fetchFirefighterId() async {
+    try {
+      await loadToken(); // make sure token and user ID are loaded
+      final token = _token;
+      final userId = _userId;
+
+      if (token == null || userId.isEmpty) {
+        print("Missing token or userId");
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse('$api/firefighter-id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final firefighterId = data['firefighter_id'];
+        print("Fetched firefighterId: $firefighterId");
+        return firefighterId;
+      } else {
+        print("Failed to fetch firefighter ID. Status: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching firefighter ID: $e");
+      return null;
+    }
+  }
 }

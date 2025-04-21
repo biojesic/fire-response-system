@@ -40,4 +40,9 @@ class Firefighter extends Model
     {
         return $this->belongsTo(FirefighterPosition::class, 'position_id');
     }
+    
+    public function equipment()
+    {
+        return $this->belongsToMany(PersonalEquipment::class, 'firefighter_personal_equipment', 'firefighter_id', 'equipment_id');
+    }
 }

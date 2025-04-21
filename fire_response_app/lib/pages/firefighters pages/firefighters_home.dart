@@ -6,6 +6,7 @@ import 'package:fire_response_app/pages/components/bottom_nav_ff.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/assigned_incident_details.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_fire_reports.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_settings.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 class FirefightersHome extends StatefulWidget {
   const FirefightersHome({super.key});
@@ -15,23 +16,248 @@ class FirefightersHome extends StatefulWidget {
 }
 
 class _FirefightersHomeState extends State<FirefightersHome> {
-  int firefighterId = 0; // Placeholder ID
+  bool _isDataFetched = false;
+  // int? firefighterId;
 
   @override
   void initState() {
     super.initState();
-    // Fetch data when the screen is initialized
-    Provider.of<FirefighterProvider>(
-      context,
-      listen: false,
-    ).fetchFirefighterStatus(firefighterId);
-    Provider.of<FirefighterProvider>(
-      context,
-      listen: false,
-    ).fetchFirefighterDetails(firefighterId, context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeData();
+    });
   }
 
-  // Handle bottom navigation tap
+  // Load firefighterId from SharedPreferences
+  Future<void> _initializeData() async {
+    if (_isDataFetched) return;
+
+    final firefighterProvider = Provider.of<FirefighterProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      // ✅ Get from SharedPreferences via provider
+      int? firefighterId = await firefighterProvider.getSavedFirefighterId();
+
+      if (firefighterId == null) {
+        print("❌ Firefighter ID is not saved in SharedPreferences.");
+
+        // 🚨 You probably need to get userId here, which is used to fetch firefighter details
+        // Assuming you already have the userId from login, use that instead of 0
+        int userId = firefighterProvider.userId ?? 0;
+
+        await firefighterProvider.fetchFirefighterDetails(userId, context);
+
+        firefighterId = firefighterProvider.getFirefighterId;
+
+        if (firefighterId == null) {
+          print("❌ Firefighter ID still not found after fetch.");
+          return;
+        } else {
+          // ✅ Save the fetched ID to SharedPreferences
+          await firefighterProvider.saveFirefighterId(firefighterId);
+          print("✅ Firefighter ID fetched and saved: $firefighterId");
+        }
+      } else {
+        print("✅ Firefighter ID loaded from SharedPreferences: $firefighterId");
+        firefighterProvider.setFirefighterId(
+          firefighterId,
+        ); // Make sure provider is updated
+      }
+
+      // 🚀 Fetch assigned incident
+      await firefighterProvider.fetchAssignedIncident(firefighterId);
+
+      setState(() {
+        _isDataFetched = true;
+      });
+    } catch (e) {
+      print("🔥 Error during initialization: $e");
+    }
+  }
+
+  // Retrieve firefighterId from SharedPreferences
+  // Future<int?> getSavedFirefighterId() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   return prefs.getInt('firefighterId');
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FirefighterProvider>(
+      builder: (context, firefighterProvider, child) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Dashboard')),
+          body: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 5, 12, 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 5, 24, 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Welcome, ${firefighterProvider.firefighterName}!',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          ClipOval(
+                            child: Image.asset(
+                              'lib/images/pfp.jpg', // Placeholder profile image
+                              height: 40,
+                              width: 40,
+                            ),
+                          ),
+                          Text(
+                            firefighterProvider.firefighterRole,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(
+                    "Status: ${firefighterProvider.status}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 50),
+                InkWell(
+                  onTap: () {
+                    print("Card clicked!");
+                    final firefighterId = firefighterProvider.getFirefighterId;
+                    if (firefighterId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => AssignedIncidentDetails(
+                                firefighterId: firefighterId,
+                              ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Firefighter ID is missing! Please try again.',
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: Material(
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 230,
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Assigned Incident",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red[800],
+                                ),
+                              ),
+                              const Divider(),
+                              InfoRow(
+                                icon: Icons.location_on,
+                                label: "Location:",
+                                value:
+                                    firefighterProvider
+                                        .assignedIncident
+                                        ?.location ??
+                                    'Loading...',
+                              ),
+                              InfoRow(
+                                icon: Icons.map,
+                                label: "Landmark:",
+                                value:
+                                    firefighterProvider
+                                        .assignedIncident
+                                        ?.landmark ??
+                                    'Loading...',
+                              ),
+                              InfoRow(
+                                icon: Icons.access_time,
+                                label: "Time Reported:",
+                                value:
+                                    firefighterProvider
+                                        .assignedIncident
+                                        ?.timeReported ??
+                                    'Loading...',
+                              ),
+                              InfoRow(
+                                icon: Icons.fire_truck,
+                                label: "Assigned Team/s:",
+                                value:
+                                    firefighterProvider
+                                        .assignedIncident
+                                        ?.teamName
+                                        ?.join(', ') ??
+                                    'Loading...',
+                              ),
+                              InfoRow(
+                                icon: Icons.fire_truck,
+                                label: "Team Leader/s:",
+                                value:
+                                    firefighterProvider
+                                                .assignedIncident
+                                                ?.teamLeader
+                                                ?.isEmpty ??
+                                            true
+                                        ? 'Loading...'
+                                        : firefighterProvider
+                                                .assignedIncident
+                                                ?.teamLeader
+                                                ?.join(', ') ??
+                                            'Loading...',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          bottomNavigationBar: BottomNavFF(
+            currentIndex: 0,
+            onTap: onItemTapped,
+          ),
+        );
+      },
+    );
+  }
+
   void onItemTapped(int index) {
     Widget nextPage;
     switch (index) {
@@ -51,137 +277,6 @@ class _FirefightersHomeState extends State<FirefightersHome> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => nextPage),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<FirefighterProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Dashboard')),
-          body: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 5, 12, 5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 5, 24, 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Welcome, ${provider.firefighterName}!',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          ClipOval(
-                            child: Image.asset(
-                              'lib/images/pfp.jpg', // Placeholder profile image
-                              height: 40,
-                              width: 40,
-                            ),
-                          ),
-                          Text(
-                            provider
-                                .firefighterRole, // Display firefighter role
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Center(
-                  child: Text(
-                    "Status: ${provider.status}", // Displays firefighter status
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 50),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AssignedIncidentDetails(),
-                      ),
-                    );
-                  },
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 230,
-                    child: Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Assigned Incident",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red[800],
-                              ),
-                            ),
-                            const Divider(),
-                            InfoRow(
-                              icon: Icons.location_on,
-                              label: "Location:",
-                              value: "Brgy. Langkaan 1",
-                            ),
-                            InfoRow(
-                              icon: Icons.map,
-                              label: "Landmark:",
-                              value: "Near Gas Station",
-                            ),
-                            InfoRow(
-                              icon: Icons.access_time,
-                              label: "Time Reported:",
-                              value: "10:30 AM",
-                            ),
-                            InfoRow(
-                              icon: Icons.fire_truck,
-                              label: "Responding Team:",
-                              value: "Team Alpha",
-                            ),
-                            InfoRow(
-                              icon: Icons.warning,
-                              label: "Incident Type:",
-                              value: "Structural Fire",
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          bottomNavigationBar: BottomNavFF(
-            currentIndex: 0,
-            onTap: onItemTapped,
-          ),
-        );
-      },
     );
   }
 }

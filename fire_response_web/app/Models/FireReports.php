@@ -35,4 +35,9 @@ class FireReports extends Model
     {
         return $this->belongsTo(FireStation::class, 'fireStationId');
     }
+
+    public function assignedTeams()
+    {
+        return $this->hasMany(Team::class, 'assignedFireIncident');
+    }
 }

@@ -4,7 +4,7 @@
     <h1 class="title">Create an Account for Firefighter</h1>
 
     <div class="mx-auto max-w-screen-sm card">
-        <form action="{{ route('admin_pages.firefighters.register') }}" method="POST">
+        <form action="{{ route('admin.firefighters.register.form') }}" method="POST">
             @csrf
 
             {{-- FIRST NAME --}}
@@ -84,7 +84,14 @@
 
             {{-- PERSONAL EQUIPMENT --}}
             <div class="mb-4">
-
+                <label>Personal Equipment</label><br>
+                @foreach ($equipmentOptions as $equipment)
+                    <label>
+                        <input type="checkbox" name="personalEquipment[]" value="{{ $equipment->id }}"
+                            {{ in_array($equipment->id, old('personalEquipment', [])) ? 'checked' : '' }}>
+                        {{ $equipment->name }}
+                    </label><br>
+                @endforeach
             </div>
 
             {{-- SELECT TEAM --}}

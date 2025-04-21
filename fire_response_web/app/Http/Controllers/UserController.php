@@ -21,4 +21,18 @@ class UserController extends Controller
 
         return response()->json($user);
     }
+
+    public function getMyFirefighterID(Request $request)
+    {
+        $user = $request->user()->load('firefighter');
+    
+        if (!$user->firefighter) {
+            return response()->json(['message' => 'No firefighter record found'], 404);
+        }
+    
+        return response()->json([
+            'firefighter_id' => $user->firefighter->id,
+        ]);
+    }
+    
 }

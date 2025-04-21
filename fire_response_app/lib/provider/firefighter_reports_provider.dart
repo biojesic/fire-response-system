@@ -15,7 +15,7 @@ class FirefighterReportsProvider with ChangeNotifier {
 
   // Fetch data from the API
   Future<void> fetchFireReports() async {
-    final url = '$api/api/firefighter_reports';
+    final url = '$api/firefighter_reports';
     // http://127.0.0.1:8000/api/firefighter_reports
     try {
       final response = await http.get(Uri.parse(url));

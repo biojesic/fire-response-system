@@ -1,4 +1,5 @@
 <x-layout>
+    @section('title', 'Fire Emergency - Login')
     <h1 class="title">Login</h1>
 
     <div class="mx-auto max-w-screen-sm card">

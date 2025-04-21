@@ -9,7 +9,8 @@ use App\Models\Team;
 use App\Models\FirefighterPosition;
 use App\Http\Controllers\AuthWebController;
 use App\Models\User;
-// use App\Controllers\FirefighterWebControllers;
+use App\Http\Controllers\PersonalEquipmentController;
+use App\Models\PersonalEquipment;
 
 class FirefighterWebController extends Controller
 {
@@ -32,7 +33,10 @@ class FirefighterWebController extends Controller
         // Fetch the positions for the firefighter
         $positions = FirefighterPosition::all();
         // dd($teams, $positions);
-        return view('admin_pages.register_firefighter', compact('teams', 'positions'));
+
+        $equipmentOptions = PersonalEquipment::all();
+
+        return view('admin_pages.register_firefighter', compact('teams', 'positions', 'equipmentOptions'));
     }
 
     
@@ -55,18 +59,21 @@ class FirefighterWebController extends Controller
      */
     public function registerFirefighter(Request $request)
 {
+    // Get the authenticated admin user
     $admin = $request->user();
 
+    // Check if the admin exists
     if (!$admin) {
         return redirect()->back()->with('error', 'Unauthorized access.');
     }
 
+    // Check if the admin firefighter has an assigned fire station
     $adminFirefighter = Firefighter::where('userId', $admin->id)->first();
-
     if (!$adminFirefighter || !$adminFirefighter->fireStationId) {
         return redirect()->back()->with('error', 'Unauthorized or no assigned fire station.');
     }
 
+    // Validate the request fields
     $fields = $request->validate([
         'userFirstName' => 'required|string|max:255',
         'userLastName' => 'required|string|max:255',
@@ -78,6 +85,7 @@ class FirefighterWebController extends Controller
         'teamId' => 'required|exists:teams,id',
         'position_id' => 'required|exists:firefighter_positions,id',
         'personalEquipment' => 'nullable|array',
+        'personalEquipment.*' => 'exists:personal_equipment,id', // Ensure each equipment exists
     ], [
         'userFirstName.required' => 'The first name field is required.',
         'userLastName.required' => 'The last name field is required.',
@@ -88,9 +96,10 @@ class FirefighterWebController extends Controller
         'position_id.required' => 'The position field is required.',
     ]);
 
+    // Clean up extra spaces
     $fields = array_map(fn($value) => is_string($value) ? trim($value) : $value, $fields);
 
-    // 🌍 Geocoding
+    // 🌍 Geocoding (for address)
     $latitude = null;
     $longitude = null;
 
@@ -109,7 +118,7 @@ class FirefighterWebController extends Controller
         Log::warning('Geocoding failed during firefighter registration: ' . $e->getMessage());
     }
 
-    // 👨‍🚒 Create user
+    // 👨‍🚒 Create the user (firefighter)
     $user = User::create([
         'userFirstName' => $fields['userFirstName'],
         'userLastName' => $fields['userLastName'],
@@ -124,14 +133,21 @@ class FirefighterWebController extends Controller
         'longitude' => $longitude,
     ]);
 
-    Firefighter::create([
+    // Create the firefighter record and attach personal equipment if available
+    $firefighter = Firefighter::create([
         'userId' => $user->id,
         'fireStationId' => $adminFirefighter->fireStationId,
         'teamId' => $fields['teamId'],
         'position_id' => $fields['position_id'],
-        'personalEquipment' => is_array($fields['personalEquipment']) ? $fields['personalEquipment'] : json_decode($fields['personalEquipment'], true),
     ]);
 
+    // If personal equipment is provided, attach it via the pivot table
+    if ($request->has('personalEquipment')) {
+        // Attach the personal equipment to the firefighter
+        $firefighter->equipment()->attach($fields['personalEquipment']);
+    }
+
+    // Redirect back with success message
     return redirect()->route('admin.firefighters')->with('success', 'Firefighter registered successfully.');
 }
 

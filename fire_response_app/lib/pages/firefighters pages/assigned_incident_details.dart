@@ -1,11 +1,11 @@
-import 'package:fire_response_app/pages/firefighters%20pages/fire_location.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+import 'package:fire_response_app/provider/assigned_incident_provider.dart';
 
 class AssignedIncidentDetails extends StatefulWidget {
-  const AssignedIncidentDetails({super.key});
+  final int firefighterId; // Pass firefighterId as an argument
+
+  const AssignedIncidentDetails({super.key, required this.firefighterId});
 
   @override
   State<AssignedIncidentDetails> createState() =>
@@ -13,174 +13,69 @@ class AssignedIncidentDetails extends StatefulWidget {
 }
 
 class _AssignedIncidentDetailsState extends State<AssignedIncidentDetails> {
-  String incidentAddress = "Brgy. Langkaan 1"; // Example address
-  LatLng? incidentLatLng;
+  late int firefighterId;
 
   @override
   void initState() {
     super.initState();
-    _getLatLngFromAddress();
-  }
+    firefighterId =
+        widget.firefighterId; // Get firefighterId passed from Home Page
 
-  Future<void> _getLatLngFromAddress() async {
-    final String url =
-        "https://nominatim.openstreetmap.org/search?format=json&q=$incidentAddress";
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
-
-        if (data.isNotEmpty) {
-          double lat = double.parse(data[0]["lat"]);
-          double lon = double.parse(data[0]["lon"]);
-
-          setState(() {
-            incidentLatLng = LatLng(lat, lon);
-          });
-
-          print("Incident Location: $lat, $lon");
-        } else {
-          print("No coordinates found for this address.");
-        }
-      } else {
-        print("Error fetching coordinates: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error: $e");
-    }
+    // Fetch the assigned incident using the firefighterId
+    Provider.of<AssignedIncidentProvider>(
+      context,
+      listen: false,
+    ).fetchAssignedIncident(context); // Pass the firefighterId here
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Incident Details')),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Fire Location',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
-              ),
-              SizedBox(height: 5),
-              Text(
-                incidentAddress,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 5),
-              InkWell(
-                onTap:
-                    incidentLatLng == null
-                        ? null
-                        : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => FireLocation(
-                                    incidentLocation: incidentLatLng!,
-                                  ),
-                            ),
-                          );
-                        },
-                child: Text(
-                  'Open Location',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
-                    color: incidentLatLng == null ? Colors.grey : Colors.blue,
-                  ),
+    return Consumer<AssignedIncidentProvider>(
+      builder: (context, assignedIncidentProvider, child) {
+        // Access the assigned incident
+        final assignedIncident = assignedIncidentProvider.assignedIncident;
+
+        if (assignedIncident == null) {
+          // Show loading spinner if no incident is available
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Assigned Incident Details')),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Location: ${assignedIncident.location ?? 'Location not available'}",
+                  style: const TextStyle(fontSize: 18),
                 ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Landmark',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
-              ),
-              SizedBox(height: 5),
-              Text(
-                'Near Gas Station',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Time Reported',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
-              ),
-              SizedBox(height: 5),
-              Text(
-                '9:00 pm',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Incident Type',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
-              ),
-              SizedBox(height: 5),
-              Text(
-                'Residential',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Units Assigned',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
-              ),
-              SizedBox(height: 5),
-              Text(
-                'Team Alpha',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 30),
-              SizedBox(
-                width: 340,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[400],
-                  ),
-                  onPressed: () {},
-                  child: Text(
-                    'Request Additional Support',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                    ),
-                  ),
+                const SizedBox(height: 10),
+                Text(
+                  "Landmark: ${assignedIncident.landmark ?? 'Landmark not available'}",
+                  style: const TextStyle(fontSize: 18),
                 ),
-              ),
-              SizedBox(height: 40),
-              Divider(),
-              SizedBox(height: 30),
-              SizedBox(
-                height: 40,
-                width: 200,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[600],
-                  ),
-                  onPressed: () {},
-                  child: Text(
-                    'Mark as Contained',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                const SizedBox(height: 10),
+                Text(
+                  "Time Reported: ${assignedIncident.timeReported ?? 'Time not available'}",
+                  style: const TextStyle(fontSize: 18),
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  "Assigned Team/s: ${assignedIncident.teamName ?? 'No teams assigned'}",
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Team Leader/s: ${assignedIncident.teamLeader ?? 'No leaders assigned'}",
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

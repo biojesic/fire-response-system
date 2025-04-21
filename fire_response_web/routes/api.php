@@ -13,6 +13,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\FirefighterPositionController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AssignedIncidentController;
 use App\Models\FireReports;
 
 Route::get('/user', function (Request $request) {
@@ -40,6 +41,8 @@ Route::post('/fire_stations', [FireStationController::class, 'store']);
 Route::resource('teams', TeamController::class);
 Route::put('/teams/{id}/status', [TeamController::class, 'updateStatus']);
 
+// routes/api.php
+Route::middleware('auth:sanctum')->get('/firefighter-id', [UserController::class, 'getMyFirefighterID']); // fetch fire fighter ID
 Route::get('/firefighters/{id}/status', [FirefighterController::class, 'getStatus']); //firefighter id 
 Route::put('/shifts/update/{id}', [ShiftController::class, 'updateShift']);
 Route::get('/shifts/auto-update', [ShiftController::class, 'autoUpdateStatus']);
@@ -54,6 +57,8 @@ Route::put('/firefighter-positions/{id}', [FirefighterPositionController::class,
 Route::delete('/firefighter-positions/{id}', [FirefighterPositionController::class, 'destroy']);
 
 Route::resource('firefighter_reports', FirefighterReportsController::class);
+
+Route::get('/assigned-incident/{firefighterId}', [AssignedIncidentController::class, 'showAssignedIncidentByFirefighter']);
 
 Route::resource('notifications', NotificationsController::class);
 

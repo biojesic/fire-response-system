@@ -18,6 +18,14 @@
 }
 
 @layer components {
+    header {
+        position: sticky;
+    }
+
+    main {
+        margin-top: 80px; /* Add space for the navbar */
+    }
+
     nav {
         @apply p-4 max-w-screen-2xl mx-auto flex items-center
             justify-between;
@@ -46,5 +54,12 @@
         shadow-sm ring-1 ring-inset ring-slate-300 
         placeholder:text-slate-500 focus:ring-2 focus:ring-inset 
         focus:ring-blue-500 sm:text-sm bg-white;
+    }
+    label {
+        @apply text-sm text-slate-600;
+    }
+    .card {
+        @apply bg-white p-6 rounded-lg shadow-lg border
+        border-slate-200;
     }
 }
