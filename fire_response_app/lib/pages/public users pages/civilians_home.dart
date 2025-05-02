@@ -101,29 +101,35 @@ class _CiviliansHomePageState extends State<CiviliansHomePage> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Container(
+                  AnimatedContainer(
+                    duration: Duration(
+                      seconds: 3,
+                    ), // Duration for the gradient animation
                     width: 170,
                     height: 170,
                     decoration: BoxDecoration(
-                      color: Colors.red,
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 5,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                      color: Colors.red, // Inside color of the container
+                    ),
+                    child: ShaderMask(
+                      shaderCallback:
+                          (bounds) => LinearGradient(
+                            colors: [Colors.red, Colors.yellow, Colors.green],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ).createShader(bounds),
+                      child: Container(
+                        decoration: BoxDecoration(shape: BoxShape.circle),
+                      ),
                     ),
                   ),
                   SizedBox(
-                    // Limit text width
-                    width: 130, // Mas maliit sa bilog para may margin
+                    width: 130, // Limit text width
                     child: Text(
                       "Report A Fire Emergency",
                       textAlign: TextAlign.center,
-                      maxLines: 2, // Limit sa 2 lines para hindi lumagpas
-                      softWrap: true, // Para mag-wrap yung text
+                      maxLines: 2, // Limit the text to 2 lines
+                      softWrap: true, // Allow text to wrap within the container
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

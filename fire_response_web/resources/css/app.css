@@ -20,14 +20,11 @@
 @layer components {
     header {
         position: sticky;
-    }
-
-    main {
-        margin-top: 80px; /* Add space for the navbar */
+        /* background-color: rgba(139, 0, 0, 0.8); */
     }
 
     nav {
-        @apply p-4 max-w-screen-2xl mx-auto flex items-center
+        @apply p-4 max-w-screen-xl mx-auto flex items-center
             justify-between;
     }
     .round-btn {
@@ -39,7 +36,7 @@
             text-slate-100 px-3 py-1 rounded-lg;
     }
     .title {
-        @apply text-3xl mb-4 font-bold;
+        @apply text-3xl mb-4 font-bold text-center;
     }
     .btn {
         @apply bg-slate-800 active:bg-slate-900
@@ -60,6 +57,31 @@
     }
     .card {
         @apply bg-white p-6 rounded-lg shadow-lg border
-        border-slate-200;
+        border-slate-200 max-w-screen-2xl mx-auto;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .custom-button {
+        background-color: transparent;
+        color: #f1f5f9; /* text-slate-100 */
+        padding-left: 0.75rem; /* px-3 */
+        padding-right: 0.75rem;
+        padding-top: 0.25rem; /* py-1 */
+        padding-bottom: 0.25rem;
+        border-radius: 0.5rem; /* rounded-lg */
+    }
+
+    /* hover:bg-slate-100/10 */
+    .custom-button:hover {
+        background-color: rgba(241, 245, 249, 0.1);
+    }
+
+    /* active:bg-red-900 */
+    .custom-button:active {
+        background-color: #7f1d1d;
     }
 }

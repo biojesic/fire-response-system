@@ -124,6 +124,7 @@ class FirefighterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'teamId' => 'required|exists:teams,id',
             'position_id' => 'required|exists:firefighter_positions,id',
+            'rank_id' => 'required|exists:firefighter_ranks,id',
             'personalEquipment' => 'nullable|array',
         ]);
 
@@ -168,6 +169,7 @@ class FirefighterController extends Controller
             'fireStationId' => $adminFirefighter->fireStationId,
             'teamId' => $fields['teamId'],
             'position_id' => $fields['position_id'],
+            'rank_id' => $fields['rank_id'],
             'personalEquipment' => is_array($fields['personalEquipment']) ? $fields['personalEquipment'] : json_decode($fields['personalEquipment'], true),
         ]);
 
@@ -176,8 +178,6 @@ class FirefighterController extends Controller
             'user' => $user
         ], 201);
     }
-
-
 
     public function getStatus($firefighterId)
     {
@@ -195,7 +195,6 @@ class FirefighterController extends Controller
     
         return response()->json(['status' => $firefighter->team->status], 200);
     }
-    
 
 
     public function getDetails($id)

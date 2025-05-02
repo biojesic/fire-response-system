@@ -14,6 +14,6 @@ class PersonalEquipment extends Model
     // Define the relationship to Firefighter
     public function firefighters()
     {
-        return $this->belongsToMany(Firefighter::class, 'personalEquipment');
+        return $this->belongsToMany(Firefighter::class, 'firefighter_personal_equipment', 'equipment_id', 'firefighter_id');
     }
 }

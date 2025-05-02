@@ -15,6 +15,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AssignedIncidentController;
 use App\Models\FireReports;
+use Illuminate\Auth\Passwords\PasswordBroker;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -23,11 +24,14 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('firereports', FireReportsController::class);
 Route::get('/firereports/{reported_by}/user', [FireReportsController::class, 'getUserReports'])->middleware('auth:sanctum');
 Route::post('/quick-report', [FireReportsController::class, 'quickReport'])->middleware('auth:sanctum');
+Route::put('/fire-reports/{fireReport}/mark-contained', [FireReportsController::class, 'markAsContained'])->middleware('auth:sanctum');
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::put('/user/{id}', [UserController::class, 'update'])->middleware('auth:sanctum');
+Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::post('/fire_stations', [FireStationController::class, 'store']);
@@ -67,7 +71,14 @@ Route::get('/get-locations', [LocationController::class, 'getLocations']);
 
 
 
+// Route::post('/test-email', function(Request $request) {
+//     Mail::raw('This is a test email from Laravel using Mailtrap.', function ($message) use ($request) {
+//         $message->to($request->email)  // Use the email passed in the body
+//                 ->subject('Test Email');
+//     });
 
+//     return response()->json(['message' => 'Test email sent successfully!']);
+// });
 
 
 

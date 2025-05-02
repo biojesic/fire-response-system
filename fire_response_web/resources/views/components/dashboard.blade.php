@@ -13,33 +13,39 @@
                 <nav class="mt-6">
                     <ul class="space-y-1 text-sm w-full">
                         <!-- Sidebar links -->
-                        <li>
-                            <a href="{{ route('admin.dashboard') }}"
-                                class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="{{ route('admin.dashboard') }}">
                                 🏠 Dashboard
                             </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center gap-2 py-2 px-4 rounded hover:bg-red-800 hover:text-white transition">
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="{{ route('admin.fire_reports') }}">
+                                📋 Fire Reports
+                            </a>
+                        </li>
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="{{ route('admin.firefighters') }}">
                                 👨‍🚒 Firefighters
                             </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center gap-2 py-2 px-4 rounded hover:bg-red-800 hover:text-white transition">
-                                🧰 Equipment
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transitio">
+                            <a href="{{ route('admin.equipment.list') }}">
+                                🧰 Equipments
                             </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center gap-2 py-2 px-4 rounded hover:bg-red-800 hover:text-white transition">
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="{{ route('admin.teams') }}">
                                 👥 Teams
                             </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center gap-2 py-2 px-4 rounded hover:bg-red-800 hover:text-white transition">
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="#">
                                 ⚙️ Settings
                             </a>
                         </li>
@@ -58,21 +64,10 @@
                     </ul>
                 </nav>
             </aside>
+            <section>
+                {{ $slot }}
+            </section>
 
-            <!-- Main Content -->
-            <main class="flex-1 p-6 ml-10 mt-10 pt-0">
-                <header class="flex justify-between items-center border-b pb-4 mb-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-                        <p class="text-sm text-gray-500">Welcome back, Admin!</p>
-                    </div>
-                </header>
-
-                <!-- Dynamic Content -->
-                <section>
-                    {{ $slot }}
-                </section>
-            </main>
         </div>
 
         <!-- Custom Confirmation Modal -->

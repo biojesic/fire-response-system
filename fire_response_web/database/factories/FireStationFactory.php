@@ -15,9 +15,9 @@ class FireStationFactory extends Factory
     public function definition(): array
     {
         return [
-            'firestationName' => $this->faker->company,
-            'firestationLocation' => $this->faker->address,
-            'firestationContactNumber' => $this->faker->phoneNumber,
+            // 'firestationName' => $this->faker->company,
+            // 'firestationLocation' => $this->faker->address,
+            // 'firestationContactNumber' => $this->faker->phoneNumber,
         ];
     }
 }

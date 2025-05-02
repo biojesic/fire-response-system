@@ -8,10 +8,18 @@ use Illuminate\Http\Request;
 class PersonalEquipmentController extends Controller
 {
     // Display a listing of the equipment
-    public function index()
-    {
-        $equipment = PersonalEquipment::all();
-        // return view('admin.pages.equipment_list', compact('equipment'));
+    public function index(Request $request) {
+        // Query to fetch equipment, with optional search functionality
+        $query = PersonalEquipment::query();
+        
+        // 🔍 Apply search if filled
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $equipments = $query->paginate(10)->withQueryString();
+
+        return view('admin_pages.equipments', compact('equipments'));
     }
 
     // Show the form for creating a new equipment
@@ -25,10 +33,14 @@ class PersonalEquipmentController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:personal_equipment',
+            'serial_number' => 'nullable|string|max:255',
+            'quantities' => 'required|integer|min:1',
         ]);
 
         PersonalEquipment::create([
             'name' => $request->name,
+            'serial_number' => $request->serial_number,
+            'quantities' => $request->quantities,  // Save the quantity
         ]);
 
         // return redirect()->route('admin.equipment.list')->with('success', 'Equipment added successfully.');

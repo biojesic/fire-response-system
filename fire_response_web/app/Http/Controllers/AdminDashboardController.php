@@ -5,37 +5,60 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\FireReports;
 use App\Models\Team;
+use App\Models\FireStation;
+use App\Models\Firefighter;
+use App\Models\FirefighterRank;
 
 class AdminDashboardController extends Controller 
 {
-    public function showDashboard()
-    {
-        // Get the fire station of the logged-in firefighter
+    public function showDashboard() {
+
+        $user = auth()->user();
+        
         $firestationId = auth()->user()->firefighter->fireStationId;
-    
-        // Get all active FireReports (Pending incidents) for this fire station
-        $activeFireReports = FireReports::where('status', 'Pending')
-                                        ->where('fireStationId', $firestationId)  // Filter incidents based on fire station
-                                        ->get();
-    
-        // Get all standby teams for this fire station (on-duty teams with 'Standby' status)
-        // Exclude teams that already have an assigned fire incident
+
+        $fireStation = FireStation::find($firestationId);
+
+        $fireReports = FireReports::all();
+
+        $position = $user->firefighter->position;
+
+
+        $pendingFireReports = FireReports::where('status', 'Pending')
+            ->where('fireStationId', $firestationId)
+            ->get();
+
+        $onResponseFireReports = FireReports::where('status', 'Responding')
+            ->where('fireStationId', $firestationId)
+            ->get();
+
+        $onResponseFirefighters = Firefighter::where('status', 'On Response')
+            ->where('fireStationId', $firestationId)
+            ->get();
+
         $teams = Team::with(['firefighters' => function ($query) {
-            $query->where('status', 'Standby');  // Only get on-duty firefighters
-        }])
-        ->where('fireStationId', $firestationId)  // Filter teams based on fire station
-        ->whereNull('assignedFireIncident')      // Exclude teams that already have an assigned incident
-        ->get();
-    
-        // Get new reports (created in the last 24 hours)
+                $query->where('status', 'Standby');
+            }])
+            ->where('fireStationId', $firestationId)
+            ->whereNull('assignedFireIncident')
+            ->get();
+
         $newReports = FireReports::where('created_at', '>=', now()->subDay())
-                                 ->where('fireStationId', $firestationId)  // Filter new reports based on fire station
-                                 ->get();
-    
-        // Return data to view (fire reports, teams, new reports)
-        return view('admin_pages.dashboard', compact('activeFireReports', 'teams', 'newReports'));
+            ->where('fireStationId', $firestationId)
+            ->get();
+
+        return view('admin_pages.dashboard', [
+            'user' => $user,
+            'position' => $position,
+            'pendingFireReports' => $pendingFireReports,
+            'onResponseFireReports' => $onResponseFireReports,
+            'teams' => $teams,
+            'newReports' => $newReports,
+            'fireStation' => $fireStation,
+            'fireReports' => $fireReports,
+            'onResponseFirefighters' => $onResponseFirefighters,
+        ]);
     }
-    
 
 
     public function showRespondingFirefighters($incidentId) {
@@ -167,6 +190,39 @@ public function dispatchToIncident(Request $request, $incidentId)
     return redirect()->route('admin.dashboard')->with('message', 'Selected teams dispatched to the incident successfully!');
 }
 
+public function showMap()
+{
+    $user = auth()->user();
 
-    
+    // Get the firefighter record of the logged-in user
+    $firefighter = Firefighter::where('user_id', $user->id)->first();
+
+    if (!$firefighter) {
+        abort(403, 'No firefighter record associated with this user.');
+    }
+
+    $fireStation = $firefighter->fireStation;
+
+    if (!$fireStation) {
+        abort(403, 'No fire station found for this firefighter.');
+    }
+
+    // Fetch fire incidents near this fire station
+    $fireIncidents = FireReport::where('status', 'Responding')
+        ->where('fireStationId', $fireStation->id)
+        ->get();
+
+    // Fetch firefighters on response at this fire station
+    $onResponseFirefighters = Firefighter::where('status', 'On Response')
+        ->where('fireStationId', $fireStation->id)
+        ->get();
+
+    return view('admin.dashboard', [
+        'fireIncidents' => $fireIncidents,
+        'onResponseFirefighters' => $onResponseFirefighters,
+        'fireStation' => $fireStation,
+    ]);
+}
+
+
 }

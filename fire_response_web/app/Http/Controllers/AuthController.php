@@ -8,7 +8,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Password;
+// use Illuminate\Support\Facades\Mail;
 
 
 class AuthController extends Controller
@@ -103,4 +104,46 @@ class AuthController extends Controller
             'msg' => 'Logged out successfully.'
         ];
     }
+
+    // Forgot password functionality
+    // public function sendPasswordResetLink(Request $request) {
+    //     // Validate email
+    //     $request->validate([
+    //         'email' => 'required|email|exists:users,email',
+    //     ]);
+
+    //     // Attempt to send the password reset link to the provided email address
+    //     $status = Password::sendResetLink($request->only('email'));
+
+    //     // Return response based on whether the email was sent successfully
+    //     return $status == Password::RESET_LINK_SENT
+    //         ? response()->json(['message' => 'We have emailed your password reset link!'], 200)
+    //         : response()->json(['message' => 'Failed to send reset link. Please check your email and try again.'], 400);
+    // }
+
+    // public function resetPassword(Request $request) {
+    //     // Validate the inputs
+    //     $request->validate([
+    //         'token' => 'required',
+    //         'email' => 'required|email',
+    //         'password' => 'required|confirmed|min:8',
+    //     ]);
+
+    //     // Attempt to reset the password using the token
+    //     $status = Password::reset(
+    //         $request->only('email', 'password', 'password_confirmation', 'token'),
+    //         function ($user) use ($request) {
+    //             // Update the user's password
+    //             $user->password = Hash::make($request->password);
+    //             $user->save();
+    //         }
+    //     );
+
+    //     // Return response based on status
+    //     return $status == Password::PASSWORD_RESET
+    //         ? response()->json(['message' => 'Password has been reset successfully!'], 200)
+    //         : response()->json(['message' => 'Failed to reset password. Please try again.'], 400);
+    // }
+
+
 }

@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreignId('fireStationId')->constrained('fire_station')->cascadeOnDelete();
             $table->foreignId('teamId')->nullable()->constrained('teams')->nullOnDelete();
             $table->foreignId('position_id')->nullable()->constrained('firefighter_positions')->onDelete('set null');
-            $table->json('personalEquipment')->nullable();
+            // $table->json('personalEquipment')->nullable();
+            $table->foreign('rank_id')->nullable()->constrained('firefighter_ranks')->onDelete('set null');
             $table->enum('status', ['Standby', 'On response', 'Off duty'])->default('off duty');
             $table->time('shift_start')->nullable();
             $table->time('shift_end')->nullable();

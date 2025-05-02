@@ -45,4 +45,9 @@ class Firefighter extends Model
     {
         return $this->belongsToMany(PersonalEquipment::class, 'firefighter_personal_equipment', 'firefighter_id', 'equipment_id');
     }
+
+    public function rank()
+    {
+        return $this->belongsTo(FirefighterRank::class, 'rank_id');
+    }
 }

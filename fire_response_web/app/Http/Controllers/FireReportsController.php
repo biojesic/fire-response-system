@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\FireReports;
 use App\Models\FireStation;
+use App\Models\Team;
+use App\Models\User;
+use App\Models\Firefighter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
+
 
 class FireReportsController extends Controller
 {
@@ -214,4 +218,60 @@ class FireReportsController extends Controller
 
         return response()->json(['message' => 'Successfully deleted']);
     }
+
+    public function markAsContained($fireReportId){
+        // Get the authenticated user (this gives you the user ID)
+        $user = Auth::user();  // This gives you the authenticated User ID
+        
+        // Find the corresponding firefighter record based on the user ID
+        $firefighter = Firefighter::where('userId', $user->id)->first();  // Assuming 'user_id' is the foreign key in the Firefighter table
+        
+        // Check if firefighter exists
+        if (!$firefighter) {
+            return response()->json([
+                'message' => 'No firefighter found for this user.',
+            ], 404); // Return 404 if no firefighter found
+        }
+
+        // Find the fire report
+        $fireReport = FireReports::findOrFail($fireReportId);
+        
+        // Find all teams assigned to this fire report
+        $teams = Team::where('assignedFireIncident', $fireReportId)->get();
+
+        // Check if the firefighter is part of any of the teams or is a dispatcher
+        $authorized = $teams->contains(function ($team) use ($firefighter) {
+            // Check if the firefighter is part of the team
+            return $team->firefighters->contains(function ($firefighterRecord) use ($firefighter) {
+                return $firefighterRecord->id == $firefighter->id;
+            }) || $team->firefighters->contains(function ($firefighterRecord) {
+                return $firefighterRecord->position->position_name == 'Radio Operator'; // Check if the firefighter has 'Radio Operator' role
+            });
+        });
+
+        // If the firefighter is not part of any team or is not a radio operator, return unauthorized
+        if (!$authorized) {
+            return response()->json([
+                'message' => 'You are not authorized to mark this fire report as contained.',
+            ], 403); // Return unauthorized response for API
+        }
+        
+        // Update the fire report status to "Resolved"
+        $fireReport->status = 'Resolved';
+        $fireReport->save();
+
+        // Update the status and assignedFireIncident of all teams
+        foreach ($teams as $team) {
+            // Update the status to "Standby"
+            $team->status = 'Standby';
+            $team->assignedFireIncident = null;  // Remove the assigned fire incident
+            $team->save();
+        }
+
+        return response()->json([
+            'message' => 'Fire report marked as contained successfully!',
+            'status' => 'success'
+        ]);
+    }
+    
 }

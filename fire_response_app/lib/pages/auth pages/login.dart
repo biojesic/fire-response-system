@@ -6,6 +6,7 @@ import 'package:fire_response_app/pages/public%20users%20pages/civilians_home.da
 import 'package:flutter/material.dart';
 import 'package:fire_response_app/provider/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,104 +19,150 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool _isObscured = true;
-  bool _isLoading = false; // Loading state
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
-      backgroundColor: Colors.black87,
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              width: double.infinity,
-              padding: EdgeInsets.fromLTRB(35, 100, 35, 20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red.shade800, Colors.black87],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      backgroundColor: Colors.grey.shade400,
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(35, 60, 35, 20),
+          // decoration: BoxDecoration(
+          //   gradient: LinearGradient(
+          //     colors: [Colors.red.shade800, Colors.black87],
+          //     begin: Alignment.topCenter,
+          //     end: Alignment.bottomCenter,
+          //   ),
+          // ),
+          child: Column(
+            children: [
+              // Align widget to correctly position the 'Login' text
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Login',
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.poppins().fontFamily,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 26,
+                    color: Colors.black, // Ensure the text color is visible
+                  ),
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.asset("lib/images/logo1.png", width: 100, height: 100),
-                  const SizedBox(height: 50),
-                  TextFormField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                    cursorColor: Colors.white,
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Please sign in to continue.',
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.poppins().fontFamily,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 17,
+                    color: Colors.black, // Ensure the text color is visible
                   ),
-                  const SizedBox(height: 30),
-                  TextFormField(
-                    controller: passwordController,
-                    obscureText: _isObscured,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: TextStyle(color: Colors.white),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isObscured ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isObscured = !_isObscured;
-                          });
-                        },
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
                     ),
-                    style: TextStyle(color: Colors.white),
-                    cursorColor: Colors.white,
+                  ],
+                ),
+                child: TextFormField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.email_outlined),
+                    hintText: "Enter your email",
                   ),
-                  const SizedBox(height: 5),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Forgotpassword(),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Forgot Password?",
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 30),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: passwordController,
+                  obscureText: _isObscured,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                    hintText: "Enter your password",
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isObscured ? Icons.visibility_off : Icons.visibility,
                       ),
+                      onPressed: () {
+                        setState(() {
+                          _isObscured = !_isObscured;
+                        });
+                      },
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
                     ),
                   ),
-                  const SizedBox(height: 70),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 5),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Forgotpassword()),
+                  );
+                },
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Forgot Password?",
+                        style: TextStyle(color: Colors.black, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
 
-                  // LOGIN BUTTON WITH LOADING STATE
-                  _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : ElevatedButton(
+              // LOGIN BUTTON WITH LOADING STATE
+              _isLoading
+                  ? CircularProgressIndicator(color: Colors.black)
+                  : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
                         onPressed: () async {
-                          // Dismiss keyboard
                           FocusScope.of(context).unfocus();
 
-                          // Check for empty fields
                           if (emailController.text.trim().isEmpty ||
                               passwordController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                           }
 
                           setState(() {
-                            _isLoading = true; // Show loading indicator
+                            _isLoading = true;
                           });
 
                           String? result = await authProvider.login(
@@ -138,14 +185,12 @@ class _LoginPageState extends State<LoginPage> {
                           );
 
                           setState(() {
-                            _isLoading = false; // Hide loading indicator
+                            _isLoading = false;
                           });
 
                           if (result == null) {
-                            // Get user role from provider
                             String userRole = authProvider.userRole;
 
-                            // Redirect based on role
                             if (userRole == "firefighter") {
                               Navigator.pushReplacement(
                                 context,
@@ -174,71 +219,123 @@ class _LoginPageState extends State<LoginPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          minimumSize: Size(170, 40),
+                          minimumSize: Size(160, 40),
                         ),
-                        child: Text(
-                          "Login",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            fontSize: 18,
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              "LOGIN",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontSize: 18,
+                              ),
+                            ),
+                            SizedBox(width: 15),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.black,
+                            ),
+                          ],
                         ),
                       ),
+                    ],
+                  ),
+              const SizedBox(height: 5),
+              Padding(
+                padding: EdgeInsets.all(5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: TextStyle(
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegisterPage(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Sign Up.",
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
 
-                  InkWell(
-                    onTap: () {
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(child: Divider(color: Colors.black)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text('OR'),
+                  ),
+                  Expanded(child: Divider(color: Colors.black)),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+              // EMERGENCY BUTTON
+              Container(
+                child: AnimatedContainer(
+                  duration: Duration(seconds: 1),
+                  curve: Curves.easeInOut,
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+
+                  child: ElevatedButton(
+                    onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterPage()),
+                        MaterialPageRoute(
+                          builder: (context) => EmergencyReport(),
+                        ),
                       );
                     },
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        "Don't have an account? Click here to sign up",
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[400],
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 8,
+                    ),
+                    child: Text(
+                      'REPORT A FIRE EMERGENCY',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
-          ),
-
-          // EMERGENCY BUTTON
-          Positioned(
-            right: 35,
-            bottom: 40,
-            child: Container(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EmergencyReport()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[400],
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 8,
-                ),
-                child: Text(
-                  'EMERGENCY',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

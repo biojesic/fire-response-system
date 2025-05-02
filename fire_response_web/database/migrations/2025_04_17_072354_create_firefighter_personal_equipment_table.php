@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('firefighter_personal_equipment', function (Blueprint $table) {
             $table->id();
             $table->foreignId('firefighter_id')->constrained()->onDelete('cascade');
-            $table->foreignId('equipment_id')->constrained('personal_equipment')->onDelete('cascade'); // Foreign key to personal_equipment table
+            $table->foreignId('equipment_id')->constrained('personal_equipment')->onDelete('cascade');
+            $table->string('serial_number')->nullable();
             $table->timestamps();
         });
     }

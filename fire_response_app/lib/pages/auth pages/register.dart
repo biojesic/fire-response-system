@@ -1,6 +1,7 @@
 import 'package:fire_response_app/pages/auth%20pages/login.dart';
 import 'package:fire_response_app/provider/auth_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 // import 'dart:convert';
 // import 'package:crypto/crypto.dart';
 import 'package:provider/provider.dart';
@@ -35,136 +36,216 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black87,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent, // Transparent background
+        elevation: 0, // No shadow
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.black), // Back arrow
+          onPressed: () {
+            Navigator.pop(context); // Go back to the previous screen
+          },
+        ),
+      ),
+      backgroundColor: Colors.grey.shade400,
       body: SingleChildScrollView(
         child: Container(
           constraints: BoxConstraints(
-            minHeight:
-                MediaQuery.of(context).size.height, // ✅ Para walang extra space
+            minHeight: MediaQuery.of(context).size.height,
           ),
-          padding: EdgeInsets.fromLTRB(35, 120, 35, 60),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.red.shade800, Colors.black87], // Mas fiery effect
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+          padding: EdgeInsets.fromLTRB(35, 20, 35, 60),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                'Sign Up',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 35,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 35),
-              TextFormField(
-                controller: firstNameController,
-                decoration: InputDecoration(
-                  labelText: 'First Name',
-                  labelStyle: TextStyle(color: Colors.white),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Create Account',
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.poppins().fontFamily,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 26,
+                    color: Colors.black, // Ensure the text color is visible
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
               ),
-              const SizedBox(height: 15),
-              TextFormField(
-                controller: lastNameController,
-                decoration: InputDecoration(
-                  labelText: 'Last Name',
-                  labelStyle: TextStyle(color: Colors.white),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
-              ),
-              const SizedBox(height: 15),
-              TextFormField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.white),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
-              ),
-              const SizedBox(height: 15),
-              TextFormField(
-                controller: addressController,
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  labelStyle: TextStyle(color: Colors.white),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
-              ),
-              const SizedBox(height: 15),
-              TextFormField(
-                controller: passwordController,
-                obscureText: _isObscured, // Para sa password hiding
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: Colors.white),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscured ? Icons.visibility_off : Icons.visibility,
+
+              const SizedBox(height: 40),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured; // Toggle visibility
-                      });
-                    },
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
+                  ],
                 ),
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
+                child: TextFormField(
+                  controller: firstNameController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.person_2_outlined),
+                    hintText: "Enter your first name",
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
               ),
               const SizedBox(height: 15),
-              TextFormField(
-                controller: confirmPasswordController,
-                obscureText: _isObscuredConfirm, // Para sa password hiding
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  labelStyle: TextStyle(color: Colors.white),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscuredConfirm
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscuredConfirm =
-                            !_isObscuredConfirm; // Toggle visibility
-                      });
-                    },
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
+                  ],
                 ),
-                style: TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
+                child: TextFormField(
+                  controller: lastNameController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.person_2_outlined),
+                    hintText: "Enter your last name",
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.email_outlined),
+                    hintText: "Enter your email",
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: addressController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.home_outlined),
+                    hintText: "Enter your address",
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: passwordController,
+                  obscureText: _isObscured,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                    hintText: "Enter your password",
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isObscured ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isObscured = !_isObscured;
+                        });
+                      },
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 187, 161, 161),
+                      blurRadius: 6,
+                      offset: Offset(3, 3),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: confirmPasswordController,
+                  obscureText: _isObscured,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(top: 14),
+                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                    hintText: "Confirm your password",
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isObscured ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isObscuredConfirm = !_isObscuredConfirm;
+                        });
+                      },
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                ),
               ),
               const SizedBox(height: 80),
               ElevatedButton(
@@ -210,6 +291,13 @@ class _RegisterPageState extends State<RegisterPage> {
                           setState(() => _isLoading = false); // 🔥 END loading
 
                           if (result == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Registration Successful!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                            await Future.delayed(Duration(seconds: 2));
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -235,10 +323,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         )
                         : Text(
-                          "Create Account",
+                          "SIGN UP",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
+                            fontFamily: GoogleFonts.poppins().fontFamily,
                             fontSize: 18,
                           ),
                         ),
@@ -255,7 +344,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   padding: EdgeInsets.all(10),
                   child: Text(
                     "Login to your account",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      fontFamily: GoogleFonts.poppins().fontFamily,
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),

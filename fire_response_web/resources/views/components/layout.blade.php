@@ -7,18 +7,27 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Default Title')</title>
+
+    {{-- Alpine JS --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- CSS/JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 
 <body class="bg-slate-200 text-slate-950">
     <!-- Sticky Navbar -->
     <header class="bg-red-800 text-white shadow-lg sticky top-0 z-100">
         <nav>
-            <h1>BFP</h1>
+            <div class="flex items-center space-x-4">
+                <img src="{{ asset('images/bfp-logo.png') }}" alt="Logo" class="h-10 w-10">
+                <h1>Bureau of Fire Protection</h1>
+            </div>
             <div class="flex items-center gap-4">
                 @guest
-                    <a href="{{ route('login') }}" class="nav-link">Login</a>
+                    <a href="{{ route('home') }}" class="custom-button">Home</a>
+                    <a href="{{ route('login') }}" class="custom-button">Login</a>
                 @endguest
 
                 {{-- @auth
@@ -48,9 +57,18 @@
     </header>
 
     <!-- Main Content -->
-    <main class="py-8 px-6 mx-auto max-w-screen-xl flex-1 mt-0 pt-0">
+    <main class="pl-50 max-w-screen-xl flex-1">
         {{ $slot }}
     </main>
+
+    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous">
+    </script> --}}
+    {{-- Google maps --}}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    </script>
 </body>
 
 </html>

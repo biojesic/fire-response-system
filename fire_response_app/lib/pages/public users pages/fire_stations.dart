@@ -1,11 +1,14 @@
+import 'package:fire_response_app/models/fire_station.dart';
 import 'package:fire_response_app/pages/components/bottom_nav.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/civilians_home.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/fire_reports.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/profile.dart';
-import 'package:fire_response_app/pages/public%20users%20pages/station_details.dart';
 import 'package:fire_response_app/provider/fire_stations_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:provider/provider.dart';
+import 'package:location/location.dart' as loc;
+import 'package:latlong2/latlong.dart' as latlng;
 
 class FireStations extends StatefulWidget {
   const FireStations({super.key});
@@ -15,79 +18,125 @@ class FireStations extends StatefulWidget {
 }
 
 class _FireStationsState extends State<FireStations> {
+  MapController mapController = MapController();
+  latlng.LatLng? userLocation;
+  List<Marker> fireStationMarkers = [];
+  Marker? userLocationMarker;
+  final int selectedIndex = 2;
+  final TextEditingController searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    Provider.of<FireStationProvider>(
-      context,
-      listen: false,
-    ).fetchFireStations();
+    fetchInitialData();
   }
 
-  final TextEditingController searchController = TextEditingController();
-  final int selectedIndex = 2;
+  Future<void> fetchInitialData() async {
+    final provider = Provider.of<FireStationProvider>(context, listen: false);
+    await provider.fetchFireStations();
 
-  void _onItemTapped(int index) {
-    if (index == selectedIndex) return;
+    // Get user location
+    loc.Location location = loc.Location();
+    final currentLoc = await location.getLocation();
 
-    Widget nextPage;
-    switch (index) {
-      case 0:
-        nextPage = CiviliansHomePage();
-        break;
-      case 1:
-        nextPage = FireReports();
-        break;
-      case 2:
-        nextPage = FireStations();
-        break;
-      case 3:
-        nextPage = Profile();
-        break;
-      default:
-        return;
-    }
+    setState(() {
+      userLocation = latlng.LatLng(currentLoc.latitude!, currentLoc.longitude!);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => nextPage),
+      // Add user location marker
+      userLocationMarker = Marker(
+        point: userLocation!,
+        width: 40.0,
+        height: 40.0,
+        child: Icon(
+          Icons.location_pin,
+          color: Colors.blue, // Blue marker for user's location
+          size: 40,
+        ),
+      );
+
+      // Add fire station markers
+      fireStationMarkers =
+          provider.fireStation.map((station) {
+            return Marker(
+              point: latlng.LatLng(
+                double.parse(station.latitude),
+                double.parse(station.longitude),
+              ),
+              width: 40.0,
+              height: 40.0,
+              child: Icon(
+                Icons.local_fire_department,
+                color: Colors.red, // Red marker for fire stations
+                size: 40,
+              ),
+            );
+          }).toList();
+    });
+  }
+
+  void _zoomToSearchedStation(FireStation station) {
+    final latlng.LatLng stationLocation = latlng.LatLng(
+      double.parse(station.latitude),
+      double.parse(station.longitude),
     );
+
+    mapController.move(stationLocation, 20);
   }
 
   @override
   Widget build(BuildContext context) {
-    final fireStationProvider = context.watch<FireStationProvider>();
     return Scaffold(
       appBar: AppBar(title: Text('Fire Stations')),
       body:
-          fireStationProvider.fireStation.isEmpty
-              ? Center(child: Text("No fire stations available."))
-              : Column(
+          userLocation == null
+              ? Center(child: CircularProgressIndicator())
+              : Stack(
                 children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(10, 5, 20, 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(30, 0, 0, 10),
+                  // OpenStreetMap
+                  FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      initialCenter: userLocation!,
+                      initialZoom: 13,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        subdomains: ['a', 'b', 'c'],
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          if (userLocationMarker != null) userLocationMarker!,
+                          ...fireStationMarkers,
+                        ],
+                      ),
+                    ],
+                  ),
+                  // Search bar
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    right: 10,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
                             child: Container(
                               height: 45,
                               decoration: BoxDecoration(
-                                color:
-                                    Colors
-                                        .white, // (Optional) Lagyan ng background para kita ang border
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(50),
                                 border: Border.all(
                                   color: Colors.black,
                                   width: 1,
-                                ), // Outline border
+                                ),
                               ),
                               child: TextFormField(
                                 controller: searchController,
                                 decoration: InputDecoration(
-                                  hintText:
-                                      'Search the Nearest Fire Station...',
+                                  hintText: 'Search Fire Stations...',
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.symmetric(
                                     horizontal: 13,
@@ -98,118 +147,47 @@ class _FireStationsState extends State<FireStations> {
                               ),
                             ),
                           ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.search, size: 40),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: fireStationProvider.fireStation.length,
-                      itemBuilder: (context, index) {
-                        final station = fireStationProvider.fireStation[index];
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          StationDetails(station: station),
-                                ),
-                              );
+                          SizedBox(width: 10),
+                          IconButton(
+                            icon: Icon(Icons.search, size: 40),
+                            onPressed: () {
+                              // Add search functionality here
                             },
-                            child: Card(
-                              margin: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 6,
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(13.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      station.firestationName,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      'Location: ${station.firestationLocation}',
-                                    ),
-                                    Text(
-                                      'Contact: ${station.firestationContactNumber}',
-                                    ),
-                                    SizedBox(height: 5),
-                                    // if (station.status == 'Active')
-                                    //   Text(
-                                    //     station.status,
-                                    //     style: TextStyle(
-                                    //       color: Colors.green[600],
-                                    //       fontSize: 15,
-                                    //       fontWeight: FontWeight.w600,
-                                    //     ),
-                                    //   )
-                                    // else
-                                    //   Text(
-                                    //     station.status,
-                                    //     style: TextStyle(
-                                    //       color: Colors.red,
-                                    //       fontSize: 15,
-                                    //       fontWeight: FontWeight.w600,
-                                    //     ),
-                                    //   ),
-                                    SizedBox(height: 7),
-                                    Row(
-                                      children: [
-                                        TextButton(
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: Colors.green[100],
-                                          ),
-                                          onPressed: () {},
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.call,
-                                                color: Colors.black,
-                                              ),
-                                              SizedBox(width: 4),
-                                              Text(
-                                                'Call Now',
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(width: 8),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
       bottomNavigationBar: BottomNav(
         currentIndex: selectedIndex,
-        onTap: _onItemTapped,
+        onTap: (index) {
+          if (index == selectedIndex) return;
+
+          Widget nextPage;
+          switch (index) {
+            case 0:
+              nextPage = CiviliansHomePage();
+              break;
+            case 1:
+              nextPage = FireReports();
+              break;
+            case 2:
+              nextPage = FireStations();
+              break;
+            case 3:
+              nextPage = Profile();
+              break;
+            default:
+              return;
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => nextPage),
+          );
+        },
       ),
     );
   }
