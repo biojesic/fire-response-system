@@ -9,7 +9,7 @@
         </header>
 
         <div class="card">
-            <form action="{{ route('admin.firefighters.register.form') }}" method="POST"
+            <form action="{{ route('admin.firefighters.register') }}" method="POST"
                 class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @csrf
 

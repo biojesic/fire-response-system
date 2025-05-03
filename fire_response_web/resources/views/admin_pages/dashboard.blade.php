@@ -162,7 +162,8 @@
                         <h3 class="text-xl font-semibold mb-4">Responding Firefighters</h3>
                         <!-- Google Map -->
                         <!-- Leaflet.js Map Container -->
-                        <div id="map" class="bg-gray-200 h-96 rounded shadow flex items-center justify-center">
+                        <div id="map"
+                            class="bg-gray-200 h-110 w-130 rounded shadow flex items-center justify-center">
                             <!-- Map will be rendered here -->
                         </div>
                     </section>
@@ -173,8 +174,13 @@
 </x-dashboard>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap(); // Ensure this is correctly triggered after the content loads
+    });
+
     let selectedTeams = []; // Array to store selected team IDs
     let map;
+    // let bounds = L.latLngBounds([fireStationLocation]);
 
     // Function to toggle team selection (visual state)
     function toggleTeamSelection(teamId) {
@@ -194,7 +200,7 @@
         // Update the hidden input with the selected teams
         document.getElementById('selected_teams').value = selectedTeams.join(',');
 
-        console.log(selectedTeams);
+        console.log('Selected Teams:', selectedTeams); // Check the console for debugging
     }
 
     // Function to handle form submission (for Mark as Contained)
@@ -229,44 +235,34 @@
 
     // Initialize the map
     function initMap() {
-        // Fire station coordinates
+        // Set the initial center of the map (fire station location for example)
         const fireStationLocation = [{{ $fireStation->latitude }}, {{ $fireStation->longitude }}];
 
-        // Create the map object
-        const map = L.map('map').setView(fireStationLocation, 12);
+        map = L.map('map').setView(fireStationLocation, 12);
 
-        // Set up OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Add marker for the fire station
+        // Place a marker for the fire station itself
         L.marker(fireStationLocation)
             .addTo(map)
-            .bindPopup('Fire Station')
-            .openPopup();
+            .bindPopup('Fire Station Location');
 
-        // Add markers for pending incidents
-        @foreach ($pendingFireReports as $incident)
-            const incidentLocation = [{{ $incident->latitude }}, {{ $incident->longitude }}];
-            L.marker(incidentLocation)
-                .addTo(map)
-                .bindPopup('Incident: {{ $incident->description }}')
-                .openPopup();
-        @endforeach
+        // Now loop through the incidents and place markers for each
+        const incidents = @json($onResponseFireReports); // Get the incidents from PHP
 
-        // Add markers for on-response firefighters
-        @foreach ($onResponseFirefighters as $firefighter)
-            const firefighterLocation = [{{ $firefighter->latitude }}, {{ $firefighter->longitude }}];
-            L.marker(firefighterLocation)
-                .addTo(map)
-                .bindPopup('{{ $firefighter->user->userLastName }} - On Response')
-                .openPopup();
-        @endforeach
+        incidents.forEach(incident => {
+            if (incident.latitude && incident.longitude) {
+                const incidentCoords = [incident.latitude, incident.longitude];
+
+                // Create a marker for each incident
+                L.marker(incidentCoords)
+                    .addTo(map)
+                    .bindPopup(
+                        `<strong>${incident.description}</strong><br>Status: ${incident.status}<br>Incident ID: ${incident.id}`
+                    );
+            }
+        });
     }
-
-    // Initialize the map when the page loads
-    window.onload = function() {
-        initMap();
-    };
 </script>

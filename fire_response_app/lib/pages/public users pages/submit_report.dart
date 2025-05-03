@@ -1,13 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
-
-import 'package:fire_response_app/provider/submit_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+// import 'package:geocoding/geocoding.dart';
+import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:fire_response_app/provider/submit_report_provider.dart';
 
 class SubmitReportPage extends StatefulWidget {
   @override
@@ -22,182 +21,12 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
 
   XFile? _image;
   final ImagePicker _picker = ImagePicker();
+  bool isSubmitting = false;
 
-  // Coordinates
   double? existingLatitude;
   double? existingLongitude;
 
-  bool isSubmitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize existing coordinates if available
-    existingLatitude = 0.0;
-    existingLongitude = 0.0;
-  }
-
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = pickedFile;
-      });
-    }
-  }
-
-  Future<void> submitFireReport(BuildContext context) async {
-    final submitReportProvider = Provider.of<SubmitReportProvider>(
-      context,
-      listen: false,
-    );
-
-    // Use the coordinates that are already available
-    double? latitude = existingLatitude;
-    double? longitude = existingLongitude;
-
-    if (latitude == null || longitude == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Coordinates are missing, cannot submit report.'),
-        ),
-      );
-      return;
-    }
-
-    // Validate form
-    if (_formKey.currentState!.validate()) {
-      try {
-        await submitReportProvider.submitFireReport(
-          context,
-          formKey: _formKey,
-          locationController: locationController,
-          landmarkController: landmarkController,
-          descriptionController: descriptionController,
-          clearFields: () {
-            setState(() {
-              descriptionController.clear();
-              locationController.clear();
-              landmarkController.clear();
-            });
-          },
-          geocodedLocation: null, // No need to pass coordinates from here
-          existingLatitude: latitude,
-          existingLongitude: longitude,
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error submitting fire report. Please try again.'),
-          ),
-        );
-      }
-    } else {
-      // If form is invalid, show a validation message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill out all required fields.')),
-      );
-    }
-  }
-
-  // Method to get current location and convert to address
-  // Future<void> _getCurrentLocation() async {
-  //   bool serviceEnabled;
-  //   LocationPermission permission;
-
-  //   // Check if location services are enabled
-  //   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  //   if (!serviceEnabled) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Location services are disabled. Please enable them.'),
-  //       ),
-  //     );
-  //     return; // Exit the method if location services are disabled
-  //   }
-
-  //   // Check for location permissions
-  //   permission = await Geolocator.checkPermission();
-  //   if (permission == LocationPermission.denied) {
-  //     permission = await Geolocator.requestPermission();
-  //     if (permission != LocationPermission.whileInUse &&
-  //         permission != LocationPermission.always) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Location permission is denied.')),
-  //       );
-  //       return; // Exit the method if permission is denied
-  //     }
-  //   }
-
-  //   // Get current position (latitude, longitude)
-  //   Position position = await Geolocator.getCurrentPosition(
-  //     desiredAccuracy: LocationAccuracy.high,
-  //   );
-
-  //   // Validate latitude and longitude values
-  //   if (position.latitude == null || position.longitude == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Unable to fetch valid coordinates.')),
-  //     );
-  //     return;
-  //   }
-
-  //   // Get the address from the coordinates using Google Maps Geocoding API
-  //   String apiKey = 'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4';
-  //   String url =
-  //       'https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&location_type=ROOFTOP&result_type=locality|sublocality|neighborhood|administrative_area_level_2&key=$apiKey';
-
-  //   try {
-  //     // Make HTTP request to the Geocoding API
-  //     final response = await http.get(Uri.parse(url));
-
-  //     if (response.statusCode == 200) {
-  //       // Parse the response
-  //       var data = json.decode(response.body);
-  //       if (data['results'].isNotEmpty) {
-  //         // Get the first result
-  //         String address = '';
-  //         for (var component in data['results'][0]['address_components']) {
-  //           if (component['types'].contains('locality')) {
-  //             address += '${component['long_name']}, ';
-  //           }
-  //           if (component['types'].contains('sublocality') ||
-  //               component['types'].contains('neighborhood')) {
-  //             address += '${component['long_name']}, ';
-  //           }
-  //           if (component['types'].contains('administrative_area_level_1')) {
-  //             address += '${component['long_name']}, ';
-  //           }
-  //           if (component['types'].contains('country')) {
-  //             address += '${component['long_name']}';
-  //           }
-  //         }
-
-  //         setState(() {
-  //           locationController.text = address;
-  //           existingLatitude = position.latitude;
-  //           existingLongitude = position.longitude;
-  //         });
-  //       } else {
-  //         // If no address found, show a message
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(content: Text('No address found for the location.')),
-  //         );
-  //       }
-  //     } else {
-  //       // Handle error if the API request fails
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Failed to fetch address from Google API.')),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     // Catch errors if the API request fails
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Unable to get address for the location: $e')),
-  //     );
-  //   }
-  // }
-
+  // Function to get the user's current location
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -241,7 +70,7 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
 
     // Get the address from the coordinates using Google Maps Geocoding API
     String apiKey =
-        'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4'; // Replace with your Google API Key
+        'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4'; // Replace with your API key
     String url =
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&location_type=ROOFTOP&result_type=street_address&key=$apiKey';
 
@@ -282,6 +111,96 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
     }
   }
 
+  // Function to get coordinates using Google's Geocoding API
+  Future<Map<String, double>?> getCoordinatesFromGoogle(String address) async {
+    final apiKey =
+        'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4'; // Replace with your actual key
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(address)}&key=$apiKey',
+    );
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'OK') {
+        final location = data['results'][0]['geometry']['location'];
+        return {'lat': location['lat'], 'lng': location['lng']};
+      }
+    }
+    return null;
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = pickedFile;
+      });
+    }
+  }
+
+  Future<void> _submitForm(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill out all required fields.')),
+      );
+      return;
+    }
+
+    setState(() => isSubmitting = true);
+
+    double? latitude;
+    double? longitude;
+
+    try {
+      // Use Google Maps API to get coordinates from manually typed address
+      final coords = await getCoordinatesFromGoogle(locationController.text);
+      if (coords == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to fetch coordinates from location.')),
+        );
+        setState(() => isSubmitting = false);
+        return;
+      }
+      latitude = coords['lat']!;
+      longitude = coords['lng']!;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error while fetching coordinates.')),
+      );
+      setState(() => isSubmitting = false);
+      return;
+    }
+
+    try {
+      final provider = Provider.of<SubmitReportProvider>(
+        context,
+        listen: false,
+      );
+
+      await provider.submitFireReport(
+        context,
+        formKey: _formKey,
+        locationController: locationController,
+        landmarkController: landmarkController,
+        descriptionController: descriptionController,
+        clearFields: () {
+          locationController.clear();
+          landmarkController.clear();
+          descriptionController.clear();
+        },
+        existingLatitude: latitude,
+        existingLongitude: longitude,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error submitting fire report.')));
+    } finally {
+      setState(() => isSubmitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -299,26 +218,31 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
                     child: textInput(
                       locationController,
                       'Enter fire location...',
+                      Icon(Icons.location_on, color: Colors.red),
                     ),
                   ),
-                  // Button to get the current location
                   IconButton(
                     icon: Icon(Icons.location_on),
-                    onPressed: () {
-                      _getCurrentLocation();
-                    },
+                    onPressed: _getCurrentLocation,
                   ),
                 ],
               ),
 
+              // Landmark
               labelField("Landmark"),
-              textInput(landmarkController, 'Enter nearest landmark...'),
+              textInput(
+                landmarkController,
+                'Enter nearest landmark...',
+                Icon(Icons.location_city, color: Colors.red),
+              ),
 
               // Description
               labelField("Description"),
-              textInput(descriptionController, 'Brief description...'),
-
-              // Image upload
+              textInput(
+                descriptionController,
+                'Brief description...',
+                Icon(Icons.description, color: Colors.red),
+              ),
               SizedBox(height: 10),
               labelField("Upload Image (optional)"),
               Center(
@@ -345,7 +269,6 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
                   ),
                 ),
               ),
-
               if (_image != null) ...[
                 SizedBox(height: 10),
                 Image.file(
@@ -362,15 +285,13 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
                   width: 250,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {
-                      submitFireReport(context);
-                    },
+                    onPressed: isSubmitting ? null : () => _submitForm(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                     ),
                     child:
                         isSubmitting
-                            ? CircularProgressIndicator() // Show a loader when submitting
+                            ? CircularProgressIndicator()
                             : Text(
                               'Submit Report',
                               style: TextStyle(
@@ -394,24 +315,56 @@ class _SubmitReportPageState extends State<SubmitReportPage> {
 Widget labelField(String label) {
   return Padding(
     padding: const EdgeInsets.only(top: 12.0, bottom: 4),
-    child: Text(label, style: TextStyle(color: Colors.black38, fontSize: 16)),
+    child: Text(
+      label,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
   );
 }
 
-Widget textInput(TextEditingController controller, String hint) {
-  return TextFormField(
-    controller: controller,
-    validator:
-        (value) =>
-            value == null || value.isEmpty ? 'This field is required.' : null,
-    decoration: InputDecoration(
-      hintText: hint,
-      hintStyle: TextStyle(color: Colors.black38),
-      border: InputBorder.none,
-      filled: true,
-      fillColor: Colors.grey.withOpacity(0.2),
-    ),
-    style: TextStyle(color: Colors.black),
-    cursorColor: Colors.white,
+Widget textInput(TextEditingController controller, String hint, Icon icon) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start, // Align elements to the left
+    children: [
+      // Text field container
+      Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(255, 187, 161, 161),
+              blurRadius: 6,
+              offset: Offset(3, 3),
+            ),
+          ],
+        ),
+        child: TextFormField(
+          controller: controller,
+          validator:
+              (value) =>
+                  value == null || value.isEmpty
+                      ? 'This field is required.'
+                      : null,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.black),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.only(top: 14),
+            prefixIcon: icon,
+            filled: true,
+          ),
+          style: TextStyle(color: Colors.black),
+          cursorColor: Colors.black,
+        ),
+      ),
+      const SizedBox(
+        height: 5,
+      ), // Add space between the field and error message
+    ],
   );
 }

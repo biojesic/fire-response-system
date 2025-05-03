@@ -12,6 +12,7 @@ class Firefighter extends Model
         'teamId',
         'position_id',
         'personalEquipment',
+        'rank_id',
     ];
 
     protected $casts = [

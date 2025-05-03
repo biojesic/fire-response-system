@@ -15,17 +15,17 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/firefighters/register', [FirefighterWebController::class, 'showRegistrationForm'])
-        ->name('admin.firefighters.register.form');
-    Route::post('admin/firefighters/register', [FirefighterWebController::class, 'registerFirefighter'])
-        ->name('admin.firefighters.register');
     Route::post('/logout', [AuthWebController::class, 'logout'])->name('logout');
     Route::post('/fire-reports/{fireReport}/mark-contained', [FireReportsController::class, 'markAsContained'])->name('markAsContained');
     
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'showDashboard'])->name('admin.dashboard');
-
+    
     //Admin Firefighters tab
     Route::get('/admin/firefighters', [FirefighterWebController::class, 'index'])->name('admin.firefighters');
+    Route::get('admin/firefighters/register-form', [FirefighterWebController::class, 'showRegistrationForm'])
+        ->name('admin.firefighters.register.form');
+    Route::post('admin/firefighters/register', [FirefighterWebController::class, 'registerFirefighter'])
+        ->name('admin.firefighters.register');
 
     // Admin Teams tab
     Route::get('/admin/teams', [TeamWebController::class, 'index'])->name('admin.teams');

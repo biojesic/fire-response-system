@@ -121,7 +121,7 @@ class FirefighterWebController extends Controller
         'password' => 'required|string|min:8|confirmed',
         'teamId' => 'required|exists:teams,id',
         'position_id' => 'required|exists:firefighter_positions,id',
-        'rank_id' => 'nullable|exists:firefighter_ranks,id',
+        'rank_id' => 'required|exists:firefighter_ranks,id',
         'personalEquipment' => 'nullable|array',
         'personalEquipment.*' => 'exists:personal_equipment,id', // Ensure each equipment exists
     ], [
@@ -132,6 +132,7 @@ class FirefighterWebController extends Controller
         'userContactNumber.required' => 'Contact number field is required.',
         'teamId.required' => 'The team field is required.',
         'position_id.required' => 'The position field is required.',
+        'rank_id.required' => 'The position field is required.',
     ]);
 
     // Clean up extra spaces
@@ -182,9 +183,23 @@ class FirefighterWebController extends Controller
 
     // If personal equipment is provided, attach it via the pivot table
     if ($request->has('personalEquipment')) {
-        // Attach the personal equipment to the firefighter through the pivot table
-        $firefighter->equipment()->attach($fields['personalEquipment']);
+        foreach ($fields['personalEquipment'] as $index => $equipmentId) {
+            $equipment = PersonalEquipment::find($equipmentId);
+
+            // Check if the equipment is available and has quantity
+            if ($equipment && $equipment->quantities > 0) {
+                // Get the serial number (if provided)
+                $serialNumber = $fields['serialNumbers'][$index] ?? null;
+
+                // Attach the equipment to the firefighter (with serial number)
+                $firefighter->equipment()->attach($equipmentId, ['serial_number' => $serialNumber]);
+
+                // Decrease the quantity of the equipment in the personal_equipment table
+                $equipment->decrement('quantities', 1);
+            }
+        }
     }
+    // dd($fields);
 
     // Redirect back with success message
     return redirect()->route('admin.firefighters')->with('success', 'Firefighter registered successfully.');

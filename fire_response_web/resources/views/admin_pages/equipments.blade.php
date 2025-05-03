@@ -20,13 +20,11 @@
                 Reset
             </a>
 
-
             <!-- Add New Equipment Button -->
             <a href="{{ route('admin.equipment.create') }}"
                 class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
                 Add New Equipment
             </a>
-
         </form>
 
         <!-- 🔄 Equipment List Table -->
@@ -36,17 +34,25 @@
                     <div class="p-6">
                         <h2 class="text-xl font-semibold mb-2">{{ $equipment->name }}</h2>
 
+                        <!-- Show Quantity -->
                         <p class="text-gray-600 mb-4">
+                            <strong>Quantity:</strong> {{ $equipment->quantities }}
+                        </p>
+
+                        {{-- <p class="text-gray-600 mb-4">
                             <strong>Assigned Firefighters:</strong>
                             @foreach ($equipment->firefighters as $firefighter)
-                                <span>{{ $firefighter->user->userFirstName }}
-                                    {{ $firefighter->user->userLastName }}</span>
+                                <div>
+                                    <span>{{ $firefighter->user->userFirstName }}
+                                        {{ $firefighter->user->userLastName }}</span>
+                                </div>
                             @endforeach
-                        </p>
+                        </p> --}}
+
 
                         <!-- ✏️ Edit & 🗑️ Delete Actions -->
                         @if (auth()->user()->firefighter->position->position_name == 'Admin')
-                            <div class="flex justify-between">
+                            <div class="flex justify-between mt-5">
                                 <a href="{{ route('admin.equipment.edit', $equipment->id) }}"
                                     class="text-blue-500 hover:underline">Edit</a>
 

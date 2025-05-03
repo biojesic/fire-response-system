@@ -1,24 +1,44 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-// import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:fire_response_app/api.dart';
 import 'package:fire_response_app/provider/auth_provider.dart';
 
 class SubmitReportProvider extends ChangeNotifier {
+  // 🔍 Method to fetch coordinates from Google Maps Geocoding API
+  Future<Map<String, double>?> _getCoordinatesFromGoogleAPI(
+    String address,
+  ) async {
+    try {
+      String apiKey = 'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4';
+      String url =
+          'https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(address)}&key=$apiKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          final lat = data['results'][0]['geometry']['location']['lat'];
+          final lng = data['results'][0]['geometry']['location']['lng'];
+          return {'latitude': lat, 'longitude': lng};
+        }
+      }
+    } catch (e) {
+      print("❌ Google API error: $e");
+    }
+    return null;
+  }
+
   Future<void> submitFireReport(
     BuildContext context, {
-
     required GlobalKey<FormState> formKey,
     required TextEditingController locationController,
     required TextEditingController landmarkController,
     required TextEditingController descriptionController,
-    required Function clearFields, // Function to clear form fields
-    required Map<String, double>?
-    geocodedLocation, // Pass the geocodedLocation as a parameter
-    required double? existingLatitude, // Optional, in case coordinates exist
-    required double? existingLongitude, // Optional, in case coordinates exist
+    required Function clearFields,
+    double? existingLatitude,
+    double? existingLongitude,
   }) async {
     const String api = API.baseUrl;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -26,24 +46,38 @@ class SubmitReportProvider extends ChangeNotifier {
     final userId = authProvider.userId;
 
     if (formKey.currentState!.validate() && userId != null) {
-      // Use geocodedLocation if available, otherwise fall back to existing coordinates
-      double? latitude = geocodedLocation?['latitude'] ?? existingLatitude;
-      double? longitude = geocodedLocation?['longitude'] ?? existingLongitude;
+      double? latitude = existingLatitude;
+      double? longitude = existingLongitude;
 
-      // Ensure that we have valid coordinates
-      if (latitude == null || longitude == null) {
-        print("❌ Error: No valid coordinates found for the location.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to get valid coordinates for the location.'),
-          ),
+      if ((latitude == null || longitude == null) &&
+          locationController.text.trim().isNotEmpty) {
+        final coords = await _getCoordinatesFromGoogleAPI(
+          locationController.text.trim(),
         );
-        return; // Stop further execution if no coordinates are found
+        if (coords != null) {
+          latitude = coords['latitude'];
+          longitude = coords['longitude'];
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Could not get coordinates from the address provided.',
+              ),
+            ),
+          );
+          return;
+        }
+      }
+
+      if (latitude == null || longitude == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Location coordinates missing.')),
+        );
+        return;
       }
 
       try {
         final url = Uri.parse('$api/firereports');
-
         final response = await http.post(
           url,
           headers: {
@@ -63,14 +97,9 @@ class SubmitReportProvider extends ChangeNotifier {
 
         if (response.statusCode == 201) {
           print("✅ Fire report submitted successfully!");
-          print("User ID: $userId");
-          print("Token: $token");
-
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Fire report submitted!')));
-
-          // Call the `clearFields` function to clear the form
           clearFields();
         } else {
           print("❌ Error submitting fire report: ${response.body}");
@@ -84,14 +113,12 @@ class SubmitReportProvider extends ChangeNotifier {
         print("❌ Exception: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'An error occurred. Please check your internet connection.',
-            ),
+            content: Text('An error occurred. Please check your connection.'),
           ),
         );
       }
     } else {
-      print("⚠️ Error: Form is invalid or userId is null");
+      print("⚠️ Form is invalid or userId is null");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill out all required fields.')),
       );
@@ -108,15 +135,43 @@ class SubmitReportProvider extends ChangeNotifier {
     required Map<String, double>? geocodedLocation,
     required double? existingLatitude,
     required double? existingLongitude,
-
     required Function clearFields,
   }) async {
     const String api = API.baseUrl;
 
     if (formKey.currentState!.validate()) {
+      double? latitude = geocodedLocation?['latitude'] ?? existingLatitude;
+      double? longitude = geocodedLocation?['longitude'] ?? existingLongitude;
+
+      if ((latitude == null || longitude == null) &&
+          locationController.text.trim().isNotEmpty) {
+        final coords = await _getCoordinatesFromGoogleAPI(
+          locationController.text.trim(),
+        );
+        if (coords != null) {
+          latitude = coords['latitude'];
+          longitude = coords['longitude'];
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Could not get coordinates from the address provided.',
+              ),
+            ),
+          );
+          return;
+        }
+      }
+
+      if (latitude == null || longitude == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Coordinates could not be determined.')),
+        );
+        return;
+      }
+
       try {
         final url = Uri.parse('$api/firereports');
-
         final response = await http.post(
           url,
           headers: {
@@ -128,7 +183,8 @@ class SubmitReportProvider extends ChangeNotifier {
             'landmark': landmarkController.text,
             'description': descriptionController.text,
             'contact_info': contactinfoController.text,
-            // ❌ remove lat/long since backend handles it
+            'latitude': latitude,
+            'longitude': longitude,
           }),
         );
 
@@ -150,9 +206,7 @@ class SubmitReportProvider extends ChangeNotifier {
         print("❌ Exception: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'An error occurred. Please check your internet connection.',
-            ),
+            content: Text('An error occurred. Please check your connection.'),
           ),
         );
       }

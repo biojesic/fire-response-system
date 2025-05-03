@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('personal_equipment', function (Blueprint $table) {
-        $table->string('serial_number')->unique();
         $table->integer('quantities')->default(0);
         });
     }

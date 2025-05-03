@@ -133,20 +133,59 @@ class _EmergencyReportState extends State<EmergencyReport> {
     double? latitude = existingLatitude;
     double? longitude = existingLongitude;
 
-    // Check if coordinates are available
+    // If coordinates are still null but address is provided manually, try geocoding
+    if ((latitude == null || longitude == null) &&
+        locationController.text.trim().isNotEmpty) {
+      try {
+        String apiKey =
+            'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4'; // Replace if needed
+        String encodedAddress = Uri.encodeComponent(
+          locationController.text.trim(),
+        );
+        String url =
+            'https://maps.googleapis.com/maps/api/geocode/json?address=$encodedAddress&key=$apiKey';
+
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          var data = json.decode(response.body);
+          if (data['status'] == 'OK') {
+            latitude = data['results'][0]['geometry']['location']['lat'];
+            longitude = data['results'][0]['geometry']['location']['lng'];
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Invalid address or no location found.')),
+            );
+            return;
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to fetch coordinates from address.'),
+            ),
+          );
+          return;
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error geocoding address: $e')));
+        return;
+      }
+    }
+
+    // Check if coordinates are now available
     if (latitude == null || longitude == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Coordinates are missing, cannot submit report.'),
         ),
       );
-      return; // Early exit if coordinates are missing
+      return;
     }
 
-    // Validate form fields
+    // Proceed with form submission
     if (_formKey.currentState!.validate()) {
       try {
-        // Call the provider function to submit the report for unauthenticated users
         await submitReportProvider.submitFireReportUnauthenticated(
           context,
           formKey: _formKey,
@@ -155,25 +194,20 @@ class _EmergencyReportState extends State<EmergencyReport> {
           descriptionController: descriptionController,
           contactinfoController: contactinfoController,
           clearFields: () {
-            // Clear the form fields after successful submission
             setState(() {
               descriptionController.clear();
               locationController.clear();
               landmarkController.clear();
-              contactinfoController.clear(); // Clear contact info as well
+              contactinfoController.clear();
+              existingLatitude = null;
+              existingLongitude = null;
             });
           },
-          geocodedLocation: null, // Not needed for unauthenticated users
+          geocodedLocation: null,
           existingLatitude: latitude,
           existingLongitude: longitude,
         );
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Report submitted successfully!')),
-        );
       } catch (e) {
-        // Show error message if something goes wrong
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error submitting fire report. Please try again.'),
@@ -181,7 +215,6 @@ class _EmergencyReportState extends State<EmergencyReport> {
         );
       }
     } else {
-      // If the form is invalid, show a validation message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill out all required fields.')),
       );
@@ -229,7 +262,6 @@ class _EmergencyReportState extends State<EmergencyReport> {
                     ),
                     SizedBox(height: 30),
 
-                    // Location
                     labelField("Location"),
                     Row(
                       children: [
