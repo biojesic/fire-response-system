@@ -51,4 +51,9 @@ class Firefighter extends Model
     {
         return $this->belongsTo(FirefighterRank::class, 'rank_id');
     }
+
+    public function location()
+{
+    return $this->hasOne(Location::class); // Assuming 'Location' model has the firefighter_id
+}
 }

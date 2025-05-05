@@ -22,6 +22,9 @@ class FirefighterProvider extends ChangeNotifier {
   String team = "";
   int userId = 0;
   int? get getFirefighterId => firefighterId;
+  String? etaForCivilian;
+
+  String? get getEtaForCivilian => etaForCivilian;
 
   // set firefighterId(int? id) {
   //   _firefighterId = id;
@@ -369,5 +372,34 @@ class FirefighterProvider extends ChangeNotifier {
   static void stopLocationTracking() {
     _timer?.cancel();
     print("🚫 Location tracking stopped.");
+  }
+
+  /// Function to fetch the ETA from backend (for the civilian)
+  Future<void> _getETAForCivilian(int firefighterId) async {
+    final url = '$api/api/get-eta/$firefighterId';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        var eta = data['eta']; // ETA received from the backend
+
+        // Update the ETA and notify listeners so the UI can be updated
+        etaForCivilian = eta;
+
+        // Notify listeners to update the UI
+        notifyListeners();
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  // This function can be called from your UI to fetch the ETA when needed
+  void fetchETAForFirefighter(int firefighterId) {
+    _getETAForCivilian(firefighterId);
   }
 }

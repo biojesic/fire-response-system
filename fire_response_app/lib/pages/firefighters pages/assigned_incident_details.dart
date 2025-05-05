@@ -1,18 +1,13 @@
 import 'dart:convert';
-
-import 'package:fire_response_app/pages/firefighters%20pages/fire_location.dart';
-import 'package:fire_response_app/provider/firefighter_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-// import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart'; // For Google Maps LatLng
-// import 'package:fire_response_app/provider/assigned_incident_provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fire_response_app/pages/firefighters%20pages/fire_location.dart';
+import 'package:fire_response_app/provider/assigned_incident_provider.dart'; // Import the AssignedIncidentProvider
 
 class AssignedIncidentDetails extends StatefulWidget {
-  final int firefighterId; // Pass firefighterId as an argument
-
-  const AssignedIncidentDetails({super.key, required this.firefighterId});
+  const AssignedIncidentDetails({super.key});
 
   @override
   State<AssignedIncidentDetails> createState() =>
@@ -20,20 +15,17 @@ class AssignedIncidentDetails extends StatefulWidget {
 }
 
 class _AssignedIncidentDetailsState extends State<AssignedIncidentDetails> {
-  late int firefighterId;
   LatLng? incidentLatLng; // Variable to hold the incident location
   late String incidentAddress;
 
   @override
   void initState() {
     super.initState();
-    firefighterId = widget.firefighterId;
-
-    // Fetch assigned incident with the actual firefighterId
-    Provider.of<FirefighterProvider>(
+    // Fetch assigned incident directly from the AssignedIncidentProvider
+    Provider.of<AssignedIncidentProvider>(
       context,
       listen: false,
-    ).fetchAssignedIncident(firefighterId);
+    ).fetchAssignedIncident(context);
   }
 
   Future<void> _getLatLngFromAddress(String address) async {
@@ -45,10 +37,6 @@ class _AssignedIncidentDetailsState extends State<AssignedIncidentDetails> {
     final String encodedAddress = Uri.encodeComponent(address);
     final String url =
         "https://nominatim.openstreetmap.org/search?format=json&q=$encodedAddress";
-
-    print(
-      "Fetching coordinates for address: $address",
-    ); // Print the address for debugging
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -78,19 +66,16 @@ class _AssignedIncidentDetailsState extends State<AssignedIncidentDetails> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FirefighterProvider>(
-      builder: (context, firefighterprovider, child) {
-        // Access the assigned incident
-        final assignedIncident = firefighterprovider.assignedIncident;
+    return Consumer<AssignedIncidentProvider>(
+      builder: (context, assignedIncidentProvider, child) {
+        final assignedIncident = assignedIncidentProvider.assignedIncident;
 
         if (assignedIncident == null) {
-          // Show loading spinner if no incident is available
           return const Center(child: CircularProgressIndicator());
         }
 
         // Set the assignedIncident.location here to incidentAddress
-        incidentAddress =
-            assignedIncident.location ?? ''; // <- Add this line here
+        incidentAddress = assignedIncident.location ?? '';
 
         // Fetch coordinates only when the address is available and incidentLatLng is not set
         if (incidentAddress.isNotEmpty && incidentLatLng == null) {
@@ -122,9 +107,8 @@ class _AssignedIncidentDetailsState extends State<AssignedIncidentDetails> {
                                 context,
                                 MaterialPageRoute(
                                   builder:
-                                      (context) => FireLocation(
-                                        incidentLocation: incidentLatLng!,
-                                      ),
+                                      (context) =>
+                                          FireLocation(), // No parameters
                                 ),
                               );
                             } else {

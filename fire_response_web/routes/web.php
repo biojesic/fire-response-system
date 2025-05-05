@@ -9,16 +9,23 @@ use App\Http\Controllers\FireReportsController;
 use App\Http\Controllers\FireReportsWebController;
 use App\Http\Controllers\TeamWebController;
 use App\Http\Controllers\FirefighterRankController;
+use App\Http\Controllers\RealTimeFireReportWebController;
 
 Route::get('/', function () {
     return view('index');
 })->name('home');
 
 Route::middleware('auth')->group(function () {
+    //Admin Dashboard Tab
     Route::post('/logout', [AuthWebController::class, 'logout'])->name('logout');
-    Route::post('/fire-reports/{fireReport}/mark-contained', [FireReportsController::class, 'markAsContained'])->name('markAsContained');
-    
+    Route::post('/fire-reports/{fireReport}/mark-contained', [FireReportsController::class, 'markAsContained'])->name('markAsContained'); 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'showDashboard'])->name('admin.dashboard');
+    Route::get('/fire-reports/{id}/initial', [RealTimeFireReportWebController::class, 'showInitial'])->name('fire-reports.initial.show');
+    Route::get('/fire-reports/{id}/progressive', [RealTimeFireReportWebController::class, 'createProgressive'])->name('fire-reports.progressive.create');
+    Route::get('/fire-reports/{id}/final', [RealTimeFireReportWebController::class, 'createFinal'])->name('fire-reports.final.create');
+    Route::post('/fire-reports/{id}/initial', [RealTimeFireReportWebController::class, 'createInitial'])->name('fire-reports.initial');
+    Route::post('/fire-reports/{id}/progressive', [RealTimeFireReportWebController::class, 'createProgressive'])->name('fire-reports.progressive');
+    Route::post('/fire-reports/{id}/final', [RealTimeFireReportWebController::class, 'createFinal'])->name('fire-reports.final');
     
     //Admin Firefighters tab
     Route::get('/admin/firefighters', [FirefighterWebController::class, 'index'])->name('admin.firefighters');

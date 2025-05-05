@@ -1,6 +1,6 @@
 <x-dashboard>
     @section('title', 'Teams Management - BFP')
-    <div class="container mx-auto p-6 ml-21">
+    <div class="container w-270 p-6 ml-21">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Teams Management</h1>

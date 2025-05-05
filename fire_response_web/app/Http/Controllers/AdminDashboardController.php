@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 use App\Models\FireReports;
 use App\Models\Team;
 use App\Models\FireStation;
 use App\Models\Firefighter;
 use App\Models\FirefighterRank;
+use App\Models\RealTimeFireReport;
+
 
 class AdminDashboardController extends Controller 
 {
@@ -23,7 +27,6 @@ class AdminDashboardController extends Controller
 
         $position = $user->firefighter->position;
 
-
         $pendingFireReports = FireReports::where('status', 'Pending')
             ->where('fireStationId', $firestationId)
             ->get();
@@ -32,9 +35,19 @@ class AdminDashboardController extends Controller
             ->where('fireStationId', $firestationId)
             ->get();
 
-        $onResponseFirefighters = Firefighter::where('status', 'On Response')
-            ->where('fireStationId', $firestationId)
-            ->get();
+         // Check if the initial report has been submitted for each report in `onResponseFireReports`
+        foreach ($onResponseFireReports as $onResponse) {
+            $realTimeReport = RealTimeFireReport::where('fire_report_id', $onResponse->id)->first();
+            $onResponse->stage = $realTimeReport ? $realTimeReport->stage : null;
+        }
+
+        $onResponseFirefighters = DB::table('firefighters')
+            ->join('locations', 'firefighters.userId', '=', 'locations.user_id') // join on user_id
+            ->join('teams', 'firefighters.teamId', '=', 'teams.id') 
+            ->where('firefighters.status', 'On Response')
+            ->where('firefighters.fireStationId', $firestationId)
+            ->get(['firefighters.*', 'locations.latitude', 'locations.longitude']);
+        
 
         $teams = Team::with(['firefighters' => function ($query) {
                 $query->where('status', 'Standby');
@@ -47,6 +60,8 @@ class AdminDashboardController extends Controller
             ->where('fireStationId', $firestationId)
             ->get();
 
+        
+
         return view('admin_pages.dashboard', [
             'user' => $user,
             'position' => $position,
@@ -57,6 +72,7 @@ class AdminDashboardController extends Controller
             'fireStation' => $fireStation,
             'fireReports' => $fireReports,
             'onResponseFirefighters' => $onResponseFirefighters,
+            
         ]);
     }
 
@@ -208,7 +224,7 @@ public function showMap()
     }
 
     // Fetch fire incidents near this fire station
-    $fireIncidents = FireReport::where('status', 'Responding')
+    $fireIncidents = FireReports::where('status', 'Responding')
         ->where('fireStationId', $fireStation->id)
         ->get();
 

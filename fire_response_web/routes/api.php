@@ -16,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AssignedIncidentController;
 use App\Models\FireReports;
 use Illuminate\Auth\Passwords\PasswordBroker;
+use App\Http\Controllers\RouteApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -68,6 +69,10 @@ Route::resource('notifications', NotificationsController::class);
 
 Route::post('/update-location', [LocationController::class, 'updateLocation']);
 Route::get('/get-locations', [LocationController::class, 'getLocations']);
+
+Route::post('/get-route-eta', [RouteApiController::class, 'getRouteAndETA']);
+Route::get('/eta-for-civilians', [RouteApiController::class, 'getETAForCivilians']);
+Route::post('/update-eta', [RouteApiController::class, 'storeETA']);
 
 
 

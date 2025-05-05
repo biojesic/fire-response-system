@@ -1,4 +1,5 @@
 // import 'package:fire_response_app/provider/assigned_incident_provider.dart';
+import 'package:fire_response_app/provider/assigned_incident_provider.dart';
 import 'package:fire_response_app/provider/firefighter_provider.dart';
 import 'package:fire_response_app/provider/firefighter_reports_provider.dart';
 import 'package:fire_response_app/provider/location_provider.dart';
@@ -40,7 +41,7 @@ void main() async {
           create: (context) => FirefighterReportsProvider(),
         ),
         ChangeNotifierProvider(create: (context) => FirefighterProvider()),
-        // ChangeNotifierProvider(create: (_) => AssignedIncidentProvider()),
+        ChangeNotifierProvider(create: (_) => AssignedIncidentProvider()),
         ChangeNotifierProvider(create: (context) => SubmitReportProvider()),
         ChangeNotifierProvider(create: (context) => LocationProvider()),
       ],

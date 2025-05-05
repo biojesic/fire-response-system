@@ -3,7 +3,9 @@ import 'package:fire_response_app/pages/public%20users%20pages/fire_reports.dart
 import 'package:fire_response_app/pages/public%20users%20pages/fire_stations.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/profile.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/submit_report.dart';
+import 'package:fire_response_app/provider/firefighter_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CiviliansHomePage extends StatefulWidget {
   const CiviliansHomePage({super.key});
@@ -45,6 +47,7 @@ class _CiviliansHomePageState extends State<CiviliansHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final firefighterProvider = Provider.of<FirefighterProvider>(context);
     return Scaffold(
       appBar: AppBar(title: Text('Fire Response App')),
       body: SingleChildScrollView(
@@ -141,45 +144,51 @@ class _CiviliansHomePageState extends State<CiviliansHomePage> {
               ),
             ),
             SizedBox(height: 100),
-            GestureDetector(
-              onTap: () {
-                // Handle the tap event (e.g., trigger emergency alert)
-              },
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 250,
-                    height: 85,
-                    decoration: BoxDecoration(
-                      color: Colors.blue[200],
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 5,
-                          offset: Offset(0, 2),
+            // ETA Section - Show the ETA from firefighterProvider
+            Consumer<FirefighterProvider>(
+              builder: (context, firefighterProvider, child) {
+                return GestureDetector(
+                  onTap: () {
+                    // Handle the tap event (e.g., trigger emergency alert)
+                  },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 250,
+                        height: 85,
+                        decoration: BoxDecoration(
+                          color: Colors.blue[200],
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 5,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    // Limit text width
-                    width: 200, // Mas maliit sa bilog para may margin
-                    child: Text(
-                      "Fire Responders are on the way. ETA: 5 mins",
-                      textAlign: TextAlign.center,
-                      maxLines: 3, // Limit sa 2 lines para hindi lumagpas
-                      softWrap: true, // Para mag-wrap yung text
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
                       ),
-                    ),
+                      SizedBox(
+                        width: 200, // Adjust for margin
+                        child: Text(
+                          firefighterProvider.getEtaForCivilian != null
+                              ? "Fire Responders are on the way. ETA: ${firefighterProvider.getEtaForCivilian}"
+                              : "Fetching ETA...", // Default text if ETA is null
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          softWrap: true,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),

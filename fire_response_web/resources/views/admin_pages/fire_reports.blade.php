@@ -1,6 +1,6 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - BFP')
-    <div class="container pt-6 ml-21">
+    <div class="container w-270 pt-6 ml-21">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Fire Reports</h1>

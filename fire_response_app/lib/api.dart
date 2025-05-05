@@ -1,5 +1,5 @@
 class API {
-  static const String baseUrl = "http://127.0.0.1:8000/api";
+  static const String baseUrl = "http://192.168.18.33:8000/api";
 }
 
 // php artisan serve --host=0.0.0.0 --port=9000  -> run sa terminal para magpalit ng localhost makapagtest sa phone

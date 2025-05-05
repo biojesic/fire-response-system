@@ -1,25 +1,24 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart'; // Import flutter_map package
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+import 'package:fire_response_app/provider/assigned_incident_provider.dart'; // Import the AssignedIncidentProvider
 
 class FireLocation extends StatefulWidget {
-  final LatLng incidentLocation;
-
-  const FireLocation({super.key, required this.incidentLocation});
-
   @override
   _FireLocationState createState() => _FireLocationState();
 }
 
 class _FireLocationState extends State<FireLocation> {
-  GoogleMapController? _mapController;
   LatLng? firefighterLocation;
   Set<Marker> _markers = {};
   Polyline? _routePolyline;
-  double? eta;
+  String? eta; // Store ETA as a string
+  MapController _mapController =
+      MapController(); // MapController to control camera view
 
   @override
   void initState() {
@@ -27,6 +26,7 @@ class _FireLocationState extends State<FireLocation> {
     _loadCurrentLocation();
   }
 
+  // Load current location of the firefighter
   Future<void> _loadCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     LocationPermission permission = await Geolocator.checkPermission();
@@ -48,57 +48,108 @@ class _FireLocationState extends State<FireLocation> {
         _markers.clear();
         _markers.add(
           Marker(
-            markerId: MarkerId('firefighter'),
-            position: firefighterLocation!,
-            infoWindow: InfoWindow(title: 'Firefighter'),
+            point: firefighterLocation!,
+            child: Image.asset(
+              'assets/firestation-icon.webp',
+              width: 200.0, // Adjust the size of the image
+              height: 200.0,
+            ),
           ),
         );
       });
 
       if (firefighterLocation != null) {
-        _getRouteAndETA(firefighterLocation!, widget.incidentLocation);
+        _getRouteAndETA(firefighterLocation!);
       }
     } catch (e) {
       print("Error getting location: $e");
     }
   }
 
-  Future<void> _getRouteAndETA(LatLng origin, LatLng destination) async {
-    final String googleApiKey = 'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4';
-    final String url =
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=$googleApiKey';
+  Future<void> _getRouteAndETA(LatLng origin) async {
+    final assignedIncidentProvider = Provider.of<AssignedIncidentProvider>(
+      context,
+      listen: false,
+    );
+
+    final assignedIncident = assignedIncidentProvider.assignedIncident;
+
+    if (assignedIncident == null) {
+      print("No assigned incident found.");
+      return;
+    }
+
+    LatLng incidentLocation = LatLng(
+      assignedIncident.latitude,
+      assignedIncident.longitude,
+    );
+
+    // Log the origin and destination coordinates to verify the values
+    print(
+      "Origin Coordinates: Latitude = ${origin.latitude}, Longitude = ${origin.longitude}",
+    );
+    print(
+      "Destination Coordinates: Latitude = ${incidentLocation.latitude}, Longitude = ${incidentLocation.longitude}",
+    );
+
+    setState(() {
+      _markers.add(
+        Marker(
+          point: incidentLocation,
+          child: Image.asset(
+            'assets/fire-icon.png',
+            width: 220.0,
+            height: 220.0,
+          ),
+        ),
+      );
+    });
+
+    _mapController.move(incidentLocation, 15.0);
+
+    final url = 'http://192.168.18.33:8000/api/get-route-eta';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.post(
+        Uri.parse(url),
+        body: json.encode({
+          'origin_lat': origin.latitude,
+          'origin_lng': origin.longitude,
+          'destination_lat': incidentLocation.latitude,
+          'destination_lng': incidentLocation.longitude,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Request Body:');
+      print(
+        json.encode({
+          'origin_lat': origin.latitude,
+          'origin_lng': origin.longitude,
+          'destination_lat': incidentLocation.latitude,
+          'destination_lng': incidentLocation.longitude,
+        }),
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
+        final data = json.decode(response.body);
+        var etaString = data['eta'];
 
-        if (data['routes'].isNotEmpty) {
-          final route = data['routes'][0]['legs'][0];
-          final duration = route['duration']['text']; // ETA
-          final polyline = route['overview_polyline']['points'];
+        // Log the ETA string
+        print('ETA: $etaString');
 
-          setState(() {
-            eta = route['duration']['value'] / 60; // ETA in minutes
-            _routePolyline = Polyline(
-              polylineId: PolylineId('route'),
-              color: Colors.blue,
-              width: 5,
-              points: _decodePolyline(polyline),
-            );
-          });
-
-          print('ETA: $duration');
-        }
+        setState(() {
+          eta = etaString; // Store the ETA as a string
+        });
       } else {
-        print('Failed to get directions: ${response.statusCode}');
+        print('Error: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
     }
   }
 
+  // Decode the polyline for route
   List<LatLng> _decodePolyline(String polyline) {
     List<LatLng> points = [];
     int index = 0;
@@ -138,6 +189,7 @@ class _FireLocationState extends State<FireLocation> {
     return points;
   }
 
+  // Calculate zoom level based on distance
   double _calculateZoomLevel(LatLng origin, LatLng destination) {
     double distance = Geolocator.distanceBetween(
       origin.latitude,
@@ -145,7 +197,6 @@ class _FireLocationState extends State<FireLocation> {
       destination.latitude,
       destination.longitude,
     );
-    // Adjust the zoom level based on the distance
     if (distance < 1000) {
       return 15.0; // More zoomed in
     } else if (distance < 5000) {
@@ -161,30 +212,38 @@ class _FireLocationState extends State<FireLocation> {
       appBar: AppBar(title: Text("Fire Responder Tracker")),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: widget.incidentLocation,
-              zoom: _calculateZoomLevel(
-                firefighterLocation!,
-                widget.incidentLocation,
+          FlutterMap(
+            mapController: _mapController, // Assign the map controller
+            options: MapOptions(
+              initialCenter: firefighterLocation ?? LatLng(14.5995, 120.9842),
+              initialZoom: _calculateZoomLevel(
+                firefighterLocation ?? LatLng(14.5995, 120.9842),
+                LatLng(14.5995, 120.9842),
               ),
             ),
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
-            markers: _markers,
-            polylines: _routePolyline != null ? {_routePolyline!} : {},
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
+            children: [
+              TileLayer(
+                urlTemplate:
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                subdomains: ['a', 'b', 'c'],
+              ),
+              MarkerLayer(markers: _markers.toList()),
+              if (_routePolyline != null)
+                PolylineLayer(polylines: [_routePolyline!]),
+            ],
           ),
           if (eta != null)
             Positioned(
-              bottom: 50,
-              left: 20,
+              bottom: 20, // Position the card towards the bottom
+              right: 20, // Position it to the right side
               child: Card(
+                color: Colors.blueAccent,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text('ETA: ${eta!.toStringAsFixed(0)} minutes'),
+                  child: Text(
+                    'ETA: $eta',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ),
             ),

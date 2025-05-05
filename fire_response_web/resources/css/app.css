@@ -57,7 +57,7 @@
     }
     .card {
         @apply bg-white p-6 rounded-lg shadow-lg border
-        border-slate-200 max-w-screen-2xl mx-auto;
+        border-slate-200 max-w-screen-lg mx-auto;
     }
 
     a {
@@ -75,13 +75,29 @@
         border-radius: 0.5rem; /* rounded-lg */
     }
 
-    /* hover:bg-slate-100/10 */
     .custom-button:hover {
         background-color: rgba(241, 245, 249, 0.1);
     }
 
-    /* active:bg-red-900 */
     .custom-button:active {
         background-color: #7f1d1d;
+    }
+    #map {
+        position: relative; /* This allows it to scroll with the content */
+        /* height: 500px; */
+        z-index: 0;
+    }
+
+    .toggle-path {
+        transition: background-color 0.3s ease;
+    }
+    .toggle-ball {
+        transition: transform 0.3s ease;
+    }
+    #shiftToggle:checked + .toggle-path {
+        background-color: #4caf50; /* Green for On-Duty */
+    }
+    #shiftToggle:checked + .toggle-path .toggle-ball {
+        transform: translateX(100%);
     }
 }

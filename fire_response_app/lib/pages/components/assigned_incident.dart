@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class InfoRow extends StatelessWidget {
   final IconData icon;
@@ -23,6 +24,7 @@ class InfoRow extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
+              fontFamily: GoogleFonts.poppins().fontFamily,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -31,7 +33,10 @@ class InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(
+                color: Colors.black87,
+                fontFamily: GoogleFonts.poppins().fontFamily,
+              ),
               overflow: TextOverflow.ellipsis, // Para hindi mag overflow
             ),
           ),

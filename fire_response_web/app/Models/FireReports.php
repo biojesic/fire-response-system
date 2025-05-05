@@ -40,4 +40,8 @@ class FireReports extends Model
     {
         return $this->hasMany(Team::class, 'assignedFireIncident');
     }
+
+    public function stages() {
+        return $this->belongsTo(RealTimeFireReport::class, 'fire_report_id');
+    }
 }

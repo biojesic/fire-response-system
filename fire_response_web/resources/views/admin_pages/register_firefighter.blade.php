@@ -1,7 +1,7 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - Register Firefighter')
 
-    <div class="container pt-6 ml-21">
+    <div class="container w-230 pt-6 ml-45">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Register A New Firefighter</h1>
@@ -133,32 +133,33 @@
                     @error('rank_id')
                         <p class="error">{{ $message }}</p>
                     @enderror
+                </div>
 
-                    {{-- SELECT POSITION --}}
-                    <div class="mb-10">
-                        <label for="position_id">Position</label>
-                        <select name="position_id" id="position_id"
-                            class="input @error('position_id') ring-red-500 @enderror">
-                            <option value="" disabled {{ old('position_id') ? '' : 'selected' }}>-- Select
-                                Position
-                                --</option>
-                            @foreach ($positions as $position)
-                                <option value="{{ $position->id }}"
-                                    {{ old('position_id') == $position->id ? 'selected' : '' }}>
-                                    {{ $position->position_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                {{-- SELECT POSITION --}}
+                <div class="mb-10">
+                    <label for="position_id">Position</label>
+                    <select name="position_id" id="position_id"
+                        class="input @error('position_id') ring-red-500 @enderror">
+                        <option value="" disabled {{ old('position_id') ? '' : 'selected' }}>-- Select
+                            Position
+                            --</option>
+                        @foreach ($positions as $position)
+                            <option value="{{ $position->id }}"
+                                {{ old('position_id') == $position->id ? 'selected' : '' }}>
+                                {{ $position->position_name }}
+                            </option>
+                        @endforeach
+                    </select>
 
-                        @error('position_id')
-                            <p class="error">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    @error('position_id')
+                        <p class="error">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    {{-- SUBMIT BUTTON --}}
-                    <div class="col-span-2 flex justify-center">
-                        <button class="btn">Create Account</button>
-                    </div>
+                {{-- SUBMIT BUTTON --}}
+                <div class="col-span-2 w-110 flex justify-center ml-57">
+                    <button class="btn">Create Account</button>
+                </div>
             </form>
         </div>
     </div>
