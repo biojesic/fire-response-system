@@ -152,7 +152,7 @@ class FirefighterController extends Controller
             'teamId' => 'required|exists:teams,id',
             'position_id' => 'required|exists:firefighter_positions,id',
             'rank_id' => 'required|exists:firefighter_ranks,id',
-            'personalEquipment' => 'nullable|array',
+            // 'personalEquipment' => 'nullable|array',
         ]);
 
         $fields = array_map(fn($value) => is_string($value) ? trim($value) : $value, $fields);
@@ -197,7 +197,7 @@ class FirefighterController extends Controller
             'teamId' => $fields['teamId'],
             'position_id' => $fields['position_id'],
             'rank_id' => $fields['rank_id'],
-            'personalEquipment' => is_array($fields['personalEquipment']) ? $fields['personalEquipment'] : json_decode($fields['personalEquipment'], true),
+            // 'personalEquipment' => is_array($fields['personalEquipment']) ? $fields['personalEquipment'] : json_decode($fields['personalEquipment'], true),
         ]);
 
         return response()->json([

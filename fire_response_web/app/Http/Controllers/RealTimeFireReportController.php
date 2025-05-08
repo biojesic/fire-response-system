@@ -298,7 +298,7 @@ class RealTimeFireReportController extends Controller {
     }
 
     // Update the fire report status to "Resolved"
-    $fireReport->status = 'Resolved';
+    $fireReport->status = 'Fire Out';
     $fireReport->marked_as_contained_by_id = $firefighter->id;
     $fireReport->marked_as_contained_at = now();
     $fireReport->save();

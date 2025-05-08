@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('real_time_fire_reports', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained()->onDelete('null');
-
+            // $table->foreign('user_id')->references('id')->on('users');
         });
     }
 

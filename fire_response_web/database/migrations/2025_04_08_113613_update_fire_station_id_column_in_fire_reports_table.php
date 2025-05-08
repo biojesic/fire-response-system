@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('fire_reports', function (Blueprint $table) {
-            $table->unsignedBigInteger('fireStationId')->nullable(false)->change();
+            // $table->unsignedBigInteger('fireStationId')->nullable(false)->change();
+            // $table->foreign('fireStationId')->references('id')->on('fire_stations')->onDelete('set null');
+            $table->foreignId('fireStationId')->nullable()->constrained('fire_station')->onDelete('set null');
         });
     }
 
@@ -22,7 +24,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('fire_reports', function (Blueprint $table) {
-            $table->unsignedBigInteger('fireStationId')->nullable()->change();
+            // $table->unsignedBigInteger('fireStationId')->nullable(false)->change();
+            // $table->dropForeign(['fireStationId']);
+            $table->dropForeign(['fireStationId']);
+            $table->dropColumn('fireStationId');
         });
     }
 };
