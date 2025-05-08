@@ -21,10 +21,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/fire-reports/{fireReport}/mark-contained', [FireReportsController::class, 'markAsContained'])->name('markAsContained'); 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'showDashboard'])->name('admin.dashboard');
     Route::get('/fire-reports/{id}/initial', [RealTimeFireReportWebController::class, 'showInitial'])->name('fire-reports.initial.show');
-    Route::get('/fire-reports/{id}/progressive', [RealTimeFireReportWebController::class, 'createProgressive'])->name('fire-reports.progressive.create');
+    Route::get('/fire-reports/{id}/progress', [RealTimeFireReportWebController::class, 'createProgress'])->name('fire-reports.progress.create');
     Route::get('/fire-reports/{id}/final', [RealTimeFireReportWebController::class, 'createFinal'])->name('fire-reports.final.create');
     Route::post('/fire-reports/{id}/initial', [RealTimeFireReportWebController::class, 'createInitial'])->name('fire-reports.initial');
-    Route::post('/fire-reports/{id}/progressive', [RealTimeFireReportWebController::class, 'createProgressive'])->name('fire-reports.progressive');
+    Route::post('/fire-reports/{id}/progress', [RealTimeFireReportWebController::class, 'createProgress'])->name('fire-reports.progress');
     Route::post('/fire-reports/{id}/final', [RealTimeFireReportWebController::class, 'createFinal'])->name('fire-reports.final');
     
     //Admin Firefighters tab
@@ -74,7 +74,7 @@ Route::middleware('guest')->group(function () {
 
 // Dispatch Routes
 Route::post('/dispatch/team/{teamId}', [AdminDashboardController::class, 'dispatchToIncident'])->name('admin.dispatch');
-Route::post('/dispatch/incident/{incidentId}', [AdminDashboardController::class, 'assignTeamToIncident'])->name('admin.dispatch.incident');
+// Route::post('/dispatch/incident/{incidentId}', [AdminDashboardController::class, 'assignTeamToIncident'])->name('admin.dispatch.incident');
 
 
 

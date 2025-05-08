@@ -26,7 +26,7 @@ class RealTimeFireReportWebController extends Controller {
             // Validate the incoming data
             $validated = $request->validate([
                 'stage' => 'required|string',
-                'content' => 'required|array', // The content must be an array (can be JSON)
+                'content' => 'required|array',
             ]);
     
             // Create the real-time fire report
@@ -164,7 +164,7 @@ class RealTimeFireReportWebController extends Controller {
         }
 
         
-        public function createProgressive($id) {
+        public function createProgress($id) {
             $report = FireReports::findOrFail($id);
             return view('admin_pages.progress_report_form', compact('report'));
         }

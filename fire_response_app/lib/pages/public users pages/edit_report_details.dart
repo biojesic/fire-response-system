@@ -61,11 +61,16 @@ class _EditDetailsState extends State<EditDetails> {
                   reportedBy: widget.report.reportedBy,
                   fireStationId: widget.report.fireStationId,
                   location: locationController.text, // Get updated location
-                  landmark: landmarkController.text, // Get updated landmark
-                  description:
-                      descriptionController.text, // Get updated description
-                  createdAt: widget.report.createdAt, // Date remains unchanged
-                  status: widget.report.status, // Status remains unchanged
+                  latitude: widget.report.latitude,
+                  longitude: widget.report.longitude,
+                  landmark: landmarkController.text,
+                  description: descriptionController.text,
+                  contactInfo: widget.report.contactInfo,
+                  status: widget.report.status,
+                  createdAt: widget.report.createdAt,
+                  updatedAt: DateTime.now(),
+                  markedAsContainedById: widget.report.markedAsContainedById,
+                  markedAsContainedAt: widget.report.markedAsContainedAt,
                 );
 
                 // Update the report in the provider

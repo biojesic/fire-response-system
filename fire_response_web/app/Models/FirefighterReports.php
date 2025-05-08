@@ -10,11 +10,11 @@ class FirefighterReports extends Model
     use HasFactory;
 
     protected $fillable = [
-        'fireReportId', // Reference to fire_reports table
-        'fireFighterId', // Reference to firefighters table
-        'reportType', // Type of report (Investigation, Incident, Spot Investigation)
-        'details', // Report details
-        'attachment', // Optional attachment (PDF, images)
+        'fireReportId',
+        'fireFighterId',
+        'reportType',
+        'details',
+        'attachment',
     ];
 
     // Relationship with FireReport model

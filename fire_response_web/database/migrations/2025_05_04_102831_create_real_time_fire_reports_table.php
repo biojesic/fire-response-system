@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('real_time_fire_reports', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('fire_report_id')->constrained()->onDelete('cascade');
             $table->enum('stage', ['initial', 'progress', 'final']);
             $table->json('content');

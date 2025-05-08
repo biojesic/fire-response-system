@@ -17,16 +17,23 @@ use App\Http\Controllers\AssignedIncidentController;
 use App\Models\FireReports;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use App\Http\Controllers\RouteApiController;
+use App\Http\Controllers\RealTimeFireReportController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// FIRE REPORTS
 Route::apiResource('firereports', FireReportsController::class);
 Route::get('/firereports/{reported_by}/user', [FireReportsController::class, 'getUserReports'])->middleware('auth:sanctum');
 Route::post('/quick-report', [FireReportsController::class, 'quickReport'])->middleware('auth:sanctum');
-Route::put('/fire-reports/{fireReport}/mark-contained', [FireReportsController::class, 'markAsContained'])->middleware('auth:sanctum');
+Route::put('/fire-reports/{fireReport}/mark-contained', [RealTimeFireReportController::class, 'markAsContained'])->middleware('auth:sanctum');
 
+// REAL TIME FIRE REPORTS
+// Route::middleware('auth:sanctum')->post('/fire-report/{id}/final', [RealTimeFireReportApiController::class, 'createFinal']);
+Route::post('/fire-report/{id}/final', [RealTimeFireReportController::class, 'createFinal']);
+
+// AUTHENTICATION
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -34,6 +41,7 @@ Route::put('/user/{id}', [UserController::class, 'update'])->middleware('auth:sa
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
+// FIRE STATIONS
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::post('/fire_stations', [FireStationController::class, 'store']);
     Route::put('/fire_stations/{id}', [FireStationController::class, 'update']);
@@ -43,10 +51,11 @@ Route::get('/fire_stations', [FireStationController::class, 'index']);
 Route::get('/fire_stations/{id}', [FireStationController::class, 'show']);
 Route::post('/fire_stations', [FireStationController::class, 'store']);
 
+// TEAMS
 Route::resource('teams', TeamController::class);
 Route::put('/teams/{id}/status', [TeamController::class, 'updateStatus']);
 
-// routes/api.php
+// FIRE FIGHTERS
 Route::middleware('auth:sanctum')->get('/firefighter-id', [UserController::class, 'getMyFirefighterID']); // fetch fire fighter ID
 Route::get('/firefighters/{id}/status', [FirefighterController::class, 'getStatus']); //firefighter id 
 Route::put('/shifts/update/{id}', [ShiftController::class, 'updateShift']);
@@ -55,7 +64,11 @@ Route::get('/firefighters/{id}/details', [FirefighterController::class, 'getDeta
 Route::resource('firefighters', FirefighterController::class);
 // Route::post('/update-status', [FirefighterController::class, 'updateStatus']);
 Route::post('/register-firefighter', [FirefighterController::class, 'registerFirefighter'])->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->get('/assigned-fire-reports', [FirefighterController::class, 'getAssignedFireReports']);
 
+
+
+// FIRE FIGHTER POSITIONS
 Route::get('/firefighter-positions', [FirefighterPositionController::class, 'index']);
 Route::post('/firefighter-positions', [FirefighterPositionController::class, 'store']);
 Route::put('/firefighter-positions/{id}', [FirefighterPositionController::class, 'update']);
@@ -73,6 +86,10 @@ Route::get('/get-locations', [LocationController::class, 'getLocations']);
 Route::post('/get-route-eta', [RouteApiController::class, 'getRouteAndETA']);
 Route::get('/eta-for-civilians', [RouteApiController::class, 'getETAForCivilians']);
 Route::post('/update-eta', [RouteApiController::class, 'storeETA']);
+
+// PUBLIC AWARENESS MODULE
+Route::get('/ongoing-incidents', [FireReportsController::class, 'getOngoingIncidents']);
+
 
 
 

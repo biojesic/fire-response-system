@@ -38,7 +38,14 @@ void main() async {
         ChangeNotifierProvider(create: (context) => FireStationProvider()),
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(
-          create: (context) => FirefighterReportsProvider(),
+          create: (context) {
+            final authProvider = Provider.of<AuthProvider>(
+              context,
+              listen: false,
+            );
+            final token = authProvider.token ?? ''; // Ensure token is available
+            return FirefighterReportsProvider(token);
+          },
         ),
         ChangeNotifierProvider(create: (context) => FirefighterProvider()),
         ChangeNotifierProvider(create: (_) => AssignedIncidentProvider()),

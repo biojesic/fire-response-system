@@ -52,8 +52,21 @@ class Firefighter extends Model
         return $this->belongsTo(FirefighterRank::class, 'rank_id');
     }
 
-    public function location()
-{
-    return $this->hasOne(Location::class); // Assuming 'Location' model has the firefighter_id
-}
+    public function location() {
+        return $this->hasOne(Location::class);
+    }
+
+    public function containedReports() {
+        return $this->hasMany(FireReports::class, 'marked_as_contained_by_id');
+    }
+
+    public function firefighterReports(){
+        return $this->hasMany(FirefighterReports::class, 'fireFighterId');
+    }
+
+    public function respondedFireReports(){
+        return $this->belongsToMany(FireReports::class, 'firefighter_reports', 'fireFighterId', 'fireReportId')
+                    ->withTimestamps();
+    }
+
 }

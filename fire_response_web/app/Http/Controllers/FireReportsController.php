@@ -13,10 +13,43 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
+use App\Models\FireFighterReports;
 
 
 class FireReportsController extends Controller
 {
+
+
+    public function show($id)
+    {
+        // Find the fire report by its ID
+        $fireReport = FireReports::find($id);
+    
+        // Check if the fire report exists
+        if (!$fireReport) {
+            return response()->json(['message' => 'Fire report not found'], 404);
+        }
+    
+        // Return the details of the fire report
+        return response()->json([
+            'id' => $fireReport->id,
+            'reported_by' => $fireReport->reported_by,
+            'fireStationId' => $fireReport->fireStationId,
+            'location' => $fireReport->location,
+            'latitude' => $fireReport->latitude,
+            'longitude' => $fireReport->longitude,
+            'landmark' => $fireReport->landmark,
+            'description' => $fireReport->description,
+            'contact_info' => $fireReport->contact_info,
+            'status' => $fireReport->status,
+            'created_at' => $fireReport->created_at,
+            'updated_at' => $fireReport->updated_at,
+            'marked_as_contained_by_id' => $fireReport->marked_as_contained_by_id,
+            'marked_as_contained_at' => $fireReport->marked_as_contained_at
+        ]);
+    }
+
+    
     private function getCoordinatesFromAddress($address)
     {
         $apiKey = env('GOOGLE_MAPS_API_KEY');
@@ -219,59 +252,65 @@ class FireReportsController extends Controller
         return response()->json(['message' => 'Successfully deleted']);
     }
 
-    public function markAsContained($fireReportId){
-        // Get the authenticated user (this gives you the user ID)
-        $user = Auth::user();  // This gives you the authenticated User ID
+    // public function markAsContained($fireReportId){
+    //     $user = Auth::user();
+
+    //     $firefighter = Firefighter::where('userId', $user->id)->first();
+
+    //     // Check if firefighter exists
+    //     if (!$firefighter) {
+    //         return response()->json([
+    //             'message' => 'No firefighter found for this user.',
+    //         ], 404);
+    //     }
+
+    //     $fireReport = FireReports::findOrFail($fireReportId);
         
-        // Find the corresponding firefighter record based on the user ID
-        $firefighter = Firefighter::where('userId', $user->id)->first();  // Assuming 'user_id' is the foreign key in the Firefighter table
+    //     // Find all teams assigned to this fire report
+    //     $teams = Team::where('assignedFireIncident', $fireReportId)->get();
+
+    //     // Check if the firefighter is part of any of the teams or is a dispatcher
+    //     $authorized = $teams->contains(function ($team) use ($firefighter) {
+    //         // Check if the firefighter is part of the team
+    //         return $team->firefighters->contains(function ($firefighterRecord) use ($firefighter) {
+    //             return $firefighterRecord->id == $firefighter->id;
+    //         }) || $team->firefighters->contains(function ($firefighterRecord) {
+    //             return $firefighterRecord->position->position_name == 'Radio Operator'; // Check if the firefighter has 'Radio Operator' role
+    //         });
+    //     });
+
+    //     // If the firefighter is not part of any team or is not a radio operator, return unauthorized
+    //     if (!$authorized) {
+    //         return response()->json([
+    //             'message' => 'You are not authorized to mark this fire report as contained.',
+    //         ], 403);
+    //     }
         
-        // Check if firefighter exists
-        if (!$firefighter) {
-            return response()->json([
-                'message' => 'No firefighter found for this user.',
-            ], 404); // Return 404 if no firefighter found
-        }
+    //     // Update the fire report status to "Resolved"
+    //     $fireReport->status = 'Resolved';
+    //     $fireReport->save();
 
-        // Find the fire report
-        $fireReport = FireReports::findOrFail($fireReportId);
-        
-        // Find all teams assigned to this fire report
-        $teams = Team::where('assignedFireIncident', $fireReportId)->get();
+    //     // Update the status and assignedFireIncident of all teams
+    //     foreach ($teams as $team) {
+    //         // Update the status to "Standby"
+    //         $team->status = 'Standby';
+    //         $team->assignedFireIncident = null;
+    //         $team->save();
+    //     }
 
-        // Check if the firefighter is part of any of the teams or is a dispatcher
-        $authorized = $teams->contains(function ($team) use ($firefighter) {
-            // Check if the firefighter is part of the team
-            return $team->firefighters->contains(function ($firefighterRecord) use ($firefighter) {
-                return $firefighterRecord->id == $firefighter->id;
-            }) || $team->firefighters->contains(function ($firefighterRecord) {
-                return $firefighterRecord->position->position_name == 'Radio Operator'; // Check if the firefighter has 'Radio Operator' role
-            });
-        });
+    //     return response()->json([
+    //         'message' => 'Fire report marked as contained successfully!',
+    //         'status' => 'success'
+    //     ]);
+    // }
 
-        // If the firefighter is not part of any team or is not a radio operator, return unauthorized
-        if (!$authorized) {
-            return response()->json([
-                'message' => 'You are not authorized to mark this fire report as contained.',
-            ], 403); // Return unauthorized response for API
-        }
-        
-        // Update the fire report status to "Resolved"
-        $fireReport->status = 'Resolved';
-        $fireReport->save();
+    public function getOngoingIncidents() {
 
-        // Update the status and assignedFireIncident of all teams
-        foreach ($teams as $team) {
-            // Update the status to "Standby"
-            $team->status = 'Standby';
-            $team->assignedFireIncident = null;  // Remove the assigned fire incident
-            $team->save();
-        }
+        $incidents = FireReports::whereIn('status', ['Pending', 'Responding'])
+                               ->select('id', 'location', 'status')
+                               ->get();
 
-        return response()->json([
-            'message' => 'Fire report marked as contained successfully!',
-            'status' => 'success'
-        ]);
+        return response()->json($incidents);
     }
     
 }

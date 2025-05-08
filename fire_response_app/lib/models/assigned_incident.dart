@@ -7,6 +7,7 @@ class AssignedIncident {
   final List<String> teamLeader;
   final double latitude;
   final double longitude;
+  final int fireReportId;
 
   AssignedIncident({
     required this.firefighterId,
@@ -17,6 +18,7 @@ class AssignedIncident {
     required this.teamLeader,
     required this.latitude,
     required this.longitude,
+    required this.fireReportId,
   });
 
   factory AssignedIncident.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class AssignedIncident {
       teamLeader: teamLeaders,
       latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
       longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
+      fireReportId: json['fireReportId'] ?? 0,
     );
   }
 }

@@ -18,8 +18,15 @@ class FireReports extends Model
         'latitude',
         'longitude',
         'contact_info',
-        'fireStationId'
+        'fireStationId',
+        'marked_as_contained_by_id',
+        'marked_as_contained_at',
     ];
+
+    protected $casts = [
+        'marked_as_contained_at' => 'datetime',
+    ];
+    
 
     public function user()
     {
@@ -36,12 +43,25 @@ class FireReports extends Model
         return $this->belongsTo(FireStation::class, 'fireStationId');
     }
 
-    public function assignedTeams()
-    {
+    public function assignedTeams() {
         return $this->hasMany(Team::class, 'assignedFireIncident');
     }
 
     public function stages() {
         return $this->belongsTo(RealTimeFireReport::class, 'fire_report_id');
     }
+
+    public function markedBy() {
+        return $this->belongsTo(Firefighter::class, 'marked_as_contained_by_id');
+    }
+
+    public function firefighterReports() {
+        return $this->hasMany(FirefighterReports::class, 'fireReportId');
+    }
+
+    public function responders() {
+        return $this->belongsToMany(Firefighter::class, 'firefighter_reports', 'fireReportId', 'fireFighterId')
+        ->with('user:id,userFirstName,userLastName');
+    }
+
 }

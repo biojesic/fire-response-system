@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('fireReportId')->constrained('fire_reports')->cascadeOnDelete(); // Foreign key to fire_reports table
             $table->foreignId('fireFighterId')->constrained('firefighters'); // Foreign key to firefighters table
-            $table->string('reportType');
-            $table->text('details');
+            $table->string('reportType')->nullable();
+            $table->text('details')->nullable();
             $table->string('attachment')->nullable();
             $table->timestamps();
         });

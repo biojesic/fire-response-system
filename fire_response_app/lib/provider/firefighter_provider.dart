@@ -238,15 +238,7 @@ class FirefighterProvider extends ChangeNotifier {
   }
 
   Future<void> fetchAssignedIncident(int firefighterId) async {
-    // if (_isIncidentFetched) {
-    //   print("❌ Assigned incident already fetched. Skipping.");
-    //   return;
-    // }
     try {
-      // if (firefighterId == null) {
-      //   throw Exception('Firefighter ID is null');
-      // }
-
       final response = await http.get(
         Uri.parse('$api/assigned-incident/$firefighterId'),
         headers: {'Accept': 'application/json'},
@@ -299,13 +291,6 @@ class FirefighterProvider extends ChangeNotifier {
           _assignedIncident = null;
           print("🟡 No assigned incident found.");
         }
-        // print(
-        //   "🚨fetchAssignedIncident Before notifyListeners: Firefighter ID = $firefighterId",
-        // );
-        // notifyListeners();
-        // print(
-        //   "🚨fetchAssignedIncident After notifyListeners: Firefighter ID = $firefighterId",
-        // );
       }
     } catch (e) {
       print("❌ Error in fetchAssignedIncident: $e");
@@ -374,21 +359,30 @@ class FirefighterProvider extends ChangeNotifier {
     print("🚫 Location tracking stopped.");
   }
 
-  /// Function to fetch the ETA from backend (for the civilian)
+  // Function to fetch the ETA from backend (for the civilian)
   Future<void> _getETAForCivilian(int firefighterId) async {
     final url = '$api/api/get-eta/$firefighterId';
+
+    print('Fetching ETA for firefighter ID: $firefighterId');
 
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        var eta = data['eta']; // ETA received from the backend
 
-        // Update the ETA and notify listeners so the UI can be updated
+        print('Response Data: $data');
+
+        var eta = data['eta'];
+
+        if (eta != null) {
+          print('Received ETA: $eta');
+        } else {
+          print('ETA is null in response');
+        }
+
         etaForCivilian = eta;
 
-        // Notify listeners to update the UI
         notifyListeners();
       } else {
         print('Error: ${response.statusCode}');
@@ -398,8 +392,12 @@ class FirefighterProvider extends ChangeNotifier {
     }
   }
 
-  // This function can be called from your UI to fetch the ETA when needed
   void fetchETAForFirefighter(int firefighterId) {
     _getETAForCivilian(firefighterId);
+  }
+
+  void clearAssignedIncident() {
+    _assignedIncident = null;
+    notifyListeners();
   }
 }

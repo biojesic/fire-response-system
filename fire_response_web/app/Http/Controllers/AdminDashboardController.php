@@ -11,6 +11,9 @@ use App\Models\FireStation;
 use App\Models\Firefighter;
 use App\Models\FirefighterRank;
 use App\Models\RealTimeFireReport;
+use App\Models\FireFighterReports;
+use App\Controllers\FireReportsController;
+
 
 
 class AdminDashboardController extends Controller 
@@ -133,36 +136,36 @@ class AdminDashboardController extends Controller
 //     return redirect()->route('admin.dashboard')->with('error', 'No standby teams available.');
 // }
 
-public function assignTeamToPendingIncident(Request $request, $teamId)
-{
-    // Get the fire station of the logged-in firefighter
-    $firestationId = auth()->user()->firefighter->fireStationId;
+// public function assignTeamToPendingIncident(Request $request, $teamId)
+// {
+//     // Get the fire station of the logged-in firefighter
+//     $firestationId = auth()->user()->firefighter->fireStationId;
 
-    // Find the team
-    $team = Team::where('id', $teamId)
-                ->where('fireStationId', $firestationId) // Filter teams based on fire station
-                ->firstOrFail();
+//     // Find the team
+//     $team = Team::where('id', $teamId)
+//                 ->where('fireStationId', $firestationId) // Filter teams based on fire station
+//                 ->firstOrFail();
 
-    // Get the first pending incident for this fire station
-    $incident = FireReports::where('status', 'Pending')
-                            ->where('fireStationId', $firestationId)  // Filter incidents based on fire station
-                            ->first();
+//     // Get the first pending incident for this fire station
+//     $incident = FireReports::where('status', 'Pending')
+//                             ->where('fireStationId', $firestationId)  // Filter incidents based on fire station
+//                             ->first();
 
-    if ($incident) {
-        // Assign the team to the incident
-        $incident->assignedFireIncident = $incident->id;
-        $incident->status = 'Responding'; // Update incident status
-        $incident->save();
+//     if ($incident) {
+//         // Assign the team to the incident
+//         $incident->assignedFireIncident = $incident->id;
+//         $incident->status = 'Responding'; // Update incident status
+//         $incident->save();
 
-        // Update the team's status
-        $team->status = 'On Response';
-        $team->save();
+//         // Update the team's status
+//         $team->status = 'On Response';
+//         $team->save();
 
-        return redirect()->route('admin.dashboard')->with('message', 'Team dispatched to the incident successfully!');
-    }
+//         return redirect()->route('admin.dashboard')->with('message', 'Team dispatched to the incident successfully!');
+//     }
 
-    return redirect()->route('admin.dashboard')->with('error', 'No pending incidents found.');
-}
+//     return redirect()->route('admin.dashboard')->with('error', 'No pending incidents found.');
+// }
 
 public function dispatchToIncident(Request $request, $incidentId)
 {
@@ -196,6 +199,18 @@ public function dispatchToIncident(Request $request, $incidentId)
             $team->assignedFireIncident = $incident->id;
             $team->status = 'On Response'; // Update team status
             $team->save();
+
+            // Log firefighters (only not Off Duty) to firefighter_reports
+            $firefighters = $team->firefighters()
+                                 ->where('status', '!=', 'Off Duty')
+                                 ->get();
+
+            foreach ($firefighters as $firefighter) {
+                FirefighterReports::firstOrCreate([
+                    'fireReportId' => $incident->id,
+                    'fireFighterId' => $firefighter->id,
+                ]);
+            }
 
             // Update the incident status
             $incident->status = 'Responding';

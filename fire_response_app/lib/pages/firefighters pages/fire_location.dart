@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart'; // Import flutter_map package
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-import 'package:fire_response_app/provider/assigned_incident_provider.dart'; // Import the AssignedIncidentProvider
+import 'package:fire_response_app/provider/assigned_incident_provider.dart';
+import 'package:fire_response_app/api.dart';
 
 class FireLocation extends StatefulWidget {
   @override
@@ -13,6 +14,7 @@ class FireLocation extends StatefulWidget {
 }
 
 class _FireLocationState extends State<FireLocation> {
+  static const String api = API.baseUrl;
   LatLng? firefighterLocation;
   Set<Marker> _markers = {};
   Polyline? _routePolyline;
@@ -107,7 +109,7 @@ class _FireLocationState extends State<FireLocation> {
 
     _mapController.move(incidentLocation, 15.0);
 
-    final url = 'http://192.168.18.33:8000/api/get-route-eta';
+    final url = '$api/get-route-eta';
 
     try {
       final response = await http.post(

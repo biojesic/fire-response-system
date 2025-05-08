@@ -49,7 +49,8 @@ class AssignedIncidentController extends Controller
                 'landmark' => $incident->landmark,
                 'timeReported' => $incident->created_at->format('h:i A'),
                 'latitude' => $incident->latitude,
-                'longitude' => $incident->longitude
+                'longitude' => $incident->longitude,
+                'fireReportId' => $incident->id
             ];
         }
 

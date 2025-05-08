@@ -118,7 +118,7 @@
                                                 @endif
 
                                                 <!-- Submit Progress Report -->
-                                                <a href="{{ route('fire-reports.progressive.create', $onResponse->id) }}"
+                                                <a href="{{ route('fire-reports.progress.create', $onResponse->id) }}"
                                                     class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
                                                     Submit Progress Report
                                                 </a>

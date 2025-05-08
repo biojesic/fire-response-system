@@ -8,6 +8,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\AssignedIncident;
+use App\Models\FireReports;
+use App\Models\FirefighterReports;
+
 
 class FirefighterController extends Controller
 {
@@ -41,11 +45,34 @@ class FirefighterController extends Controller
     /**
      * Display the specified firefighter.
      */
-    public function show($id)
-    {
-        // Fetch firefighter by ID with their relationships
-        return Firefighter::with(['user', 'fireStation', 'team'])->findOrFail($id);
-    }
+    // public function show($id)
+    // {
+    //     // Fetch firefighter by ID with their relationships
+    //     return Firefighter::with(['user', 'fireStation', 'team'])->findOrFail($id);
+    // }
+
+    // public function show($id)
+    // {
+    //     $firefighter = Firefighter::with([
+    //         'respondedFireReports' => function ($query) {
+    //             $query->select(
+    //                 'fire_reports.id',
+    //                 'fire_reports.location',
+    //                 'fire_reports.landmark',
+    //                 'fire_reports.description',
+    //                 'fire_reports.status',
+    //                 'fire_reports.created_at',
+    //                 'fire_reports.marked_as_contained_by_id',
+    //                 'fire_reports.marked_as_contained_at'
+    //             );
+    //         }
+    //     ])->findOrFail($id);
+    
+    //     return response()->json([
+    //         'fireReports' => $firefighter->respondedFireReports
+    //     ]);
+    // }
+    
 
     /**
      * Update the specified firefighter in storage.
@@ -214,4 +241,31 @@ class FirefighterController extends Controller
     {
         return response()->json(FirefighterPosition::all());
     }
+
+    public function getAssignedFireReports(Request $request)
+{
+    $user = $request->user();
+
+    $firefighter = Firefighter::where('userId', $user->id)->first();
+
+    if (!$firefighter) {
+        return response()->json(['message' => 'No firefighter found for this user.'], 404);
+    }
+
+    $assignedReports = $firefighter->firefighterReports()->with('fireReport')->get();
+
+    // Optional: transform results
+    $response = $assignedReports->map(function ($report) {
+        return [
+            'report_id' => $report->fireReport->id,
+            'location' => $report->fireReport->location,
+            'landmark' => $report->fireReport->landmark,
+            'status' => $report->fireReport->status,
+            'created_at' => $report->fireReport->created_at,
+        ];
+    });
+
+    return response()->json($response);
+}
+
 }

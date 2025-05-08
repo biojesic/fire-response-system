@@ -10,6 +10,10 @@ class UserProvider with ChangeNotifier {
 
   User? get currentUser => _currentUser;
 
+  bool _isNotificationVisible = false;
+
+  bool get isNotificationVisible => _isNotificationVisible;
+
   // Fetch user data from MySQL via Laravel API
   Future<void> fetchUserData(String token) async {
     try {
@@ -66,5 +70,22 @@ class UserProvider with ChangeNotifier {
       print('Error updating user data: $error');
       return false;
     }
+  }
+
+  Future<List> getOngoingIncidents() async {
+    final response = await http.get(Uri.parse('$api/ongoing-incidents'));
+
+    if (response.statusCode == 200) {
+      List incidents = json.decode(response.body);
+      return incidents;
+    } else {
+      throw Exception('Failed to load ongoing incidents');
+    }
+  }
+
+  // You can use this function to trigger the notification visibility
+  void toggleNotificationVisibility(bool isVisible) {
+    _isNotificationVisible = isVisible;
+    notifyListeners(); // Notify all listeners (UI updates)
   }
 }

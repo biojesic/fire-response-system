@@ -95,4 +95,31 @@ class FireReportProvider extends ChangeNotifier {
     _fireReports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     notifyListeners(); // UI will auto-rebuild
   }
+
+  // Future<void> markAsContained(int fireReportId) async {
+  //   try {
+  //     final response = await http.put(
+  //       Uri.parse('$api/fire-reports/$fireReportId/mark-as-contained'),
+  //       headers: {'Authorization': 'Bearer ${_authProvider.token}'},
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       print("Fire report marked as contained successfully");
+
+  //       // Optionally update the report status locally
+  //       FireReport updatedReport = _fireReports.firstWhere(
+  //         (report) => report.id == fireReportId,
+  //       );
+  //       updatedReport.status =
+  //           'Contained'; // Assuming `status` is a property of `FireReport`
+
+  //       // Notify listeners to update UI
+  //       notifyListeners();
+  //     } else {
+  //       print("Failed to mark report as contained: ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     print("Error marking report as contained: $e");
+  //   }
+  // }
 }

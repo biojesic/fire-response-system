@@ -1,4 +1,5 @@
 import 'package:fire_response_app/pages/components/bottom_nav_ff.dart';
+import 'package:fire_response_app/pages/firefighters%20pages/firefighter_reports_view_details.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_home.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_settings.dart';
 import 'package:fire_response_app/provider/firefighter_reports_provider.dart';
@@ -24,7 +25,7 @@ class _FirefightersFireReportsState extends State<FirefightersFireReports> {
     Provider.of<FirefighterReportsProvider>(
       context,
       listen: false,
-    ).fetchFireReports();
+    ).fetchFirefighterReports();
   }
 
   void onItemTapped(int index) {
@@ -105,7 +106,7 @@ class _FirefightersFireReportsState extends State<FirefightersFireReports> {
               children: [
                 Expanded(
                   child: Text(
-                    "Type",
+                    "Location",
                     style: TextStyle(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
@@ -160,14 +161,14 @@ class _FirefightersFireReportsState extends State<FirefightersFireReports> {
                                 Expanded(
                                   child: Text(
                                     report
-                                        .reportType, // Assuming location is part of the report
+                                        .location, // Assuming location is part of the report
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
-                                    report
-                                        .createdAt, // Assuming date is part of the report
+                                    report.createdAt
+                                        .toString(), // Format the date as needed
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -175,7 +176,22 @@ class _FirefightersFireReportsState extends State<FirefightersFireReports> {
                                   child: Center(
                                     child: TextButton(
                                       onPressed: () {
-                                        // Add navigation to detailed report page here
+                                        final fireReportId =
+                                            report
+                                                .reportId; // Get the report ID from the current report
+
+                                        // Navigate to the details page and pass the fireReportId
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    FirefighterReportsViewDetails(
+                                                      fireReportId:
+                                                          fireReportId!,
+                                                    ),
+                                          ),
+                                        );
                                       },
                                       child: Text(
                                         "View Details",

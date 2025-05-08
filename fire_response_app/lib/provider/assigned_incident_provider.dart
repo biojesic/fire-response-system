@@ -75,4 +75,40 @@ class AssignedIncidentProvider with ChangeNotifier {
       print("❌ Error in fetchAssignedIncident: $e");
     }
   }
+
+  Future<void> markIncidentAsContained(BuildContext context) async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.loadUserSession();
+
+      final token = authProvider.token;
+
+      if (token == null || _assignedIncident == null) {
+        throw Exception("Missing token or assigned incident.");
+      }
+
+      final response = await http.put(
+        Uri.parse(
+          '$api/fire-reports/${_assignedIncident!.fireReportId}/mark-contained',
+        ),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("✅ Incident marked as contained.");
+        // Optionally update local state
+        _assignedIncident = null;
+        notifyListeners();
+      } else {
+        print(
+          "❌ Failed to mark incident as contained. Status code: ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      print("❌ Error marking incident as contained: $e");
+    }
+  }
 }
