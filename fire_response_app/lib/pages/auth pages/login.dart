@@ -1,8 +1,11 @@
 import 'package:fire_response_app/pages/auth%20pages/forgotpassword.dart';
 import 'package:fire_response_app/pages/auth%20pages/register.dart';
+import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_home.dart';
+import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_register.dart';
 import 'package:fire_response_app/pages/emergency_page/emergency_report.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_home.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/civilians_home.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_response_app/provider/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +25,49 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    // Handle foreground notifications (when the app is open)
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Message received in foreground: ${message.notification?.title}');
+      // You can show an alert or update the UI here for the notification
+      // Example: Show an alert dialog
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text(message.notification?.title ?? "Notification"),
+              content: Text(
+                message.notification?.body ?? "You have a new notification.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            ),
+      );
+    });
+
+    // Handle background notifications (when the app is in the background or terminated)
+    FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
+      print('Background message received: ${message.notification?.title}');
+      // Handle background message here
+    });
+
+    // Handle when the user taps on a notification (whether the app is in the background or terminated)
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification clicked: ${message.notification?.title}');
+      // Navigate to a specific screen when the notification is tapped
+      // Example: Navigate to home screen or another screen
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
@@ -29,16 +75,12 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.grey.shade400,
       body: SingleChildScrollView(
         child: Container(
-          height: MediaQuery.of(context).size.height,
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          // height: MediaQuery.of(context).size.height,
           width: double.infinity,
-          padding: EdgeInsets.fromLTRB(35, 60, 35, 20),
-          // decoration: BoxDecoration(
-          //   gradient: LinearGradient(
-          //     colors: [Colors.red.shade800, Colors.black87],
-          //     begin: Alignment.topCenter,
-          //     end: Alignment.bottomCenter,
-          //   ),
-          // ),
+          padding: EdgeInsets.fromLTRB(35, 60, 35, 10),
           child: Column(
             children: [
               // Align widget to correctly position the 'Login' text
@@ -205,6 +247,13 @@ class _LoginPageState extends State<LoginPage> {
                                   builder: (context) => CiviliansHomePage(),
                                 ),
                               );
+                            } else if (userRole == "Barangay") {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FireAidHomePage(),
+                                ), // Create or link this page
+                              );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -280,7 +329,42 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 5),
+              Row(
+                children: [
+                  Text(
+                    'Create an Account as a ',
+                    style: TextStyle(
+                      // decoration: TextDecoration.underline,
+                      fontFamily: GoogleFonts.poppins().fontFamily,
+                      color: Colors.black,
+                      fontSize: 14,
+                      // fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FireAidRegisterPage(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Baranggay Fire Aid',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -294,7 +378,7 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               // EMERGENCY BUTTON
               Container(
                 child: AnimatedContainer(

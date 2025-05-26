@@ -13,16 +13,37 @@
                 <nav class="mt-6">
                     <ul class="space-y-1 text-sm w-full">
                         <!-- Sidebar links -->
+                        @php
+                            $position = Auth::user()->firefighter?->position?->position_name;
+                        @endphp
                         <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="{{ route('admin.dashboard') }}">
-                                🏠 Dashboard
-                            </a>
+                            class="flex items-center gap-2 py-2 px-2 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            @if ($position === 'Super Admin')
+                                <a href="{{ route('superadmin.dashboard') }}">
+                                    🏠 Dashboard
+                                </a>
+                            @else
+                                <a href="{{ route('admin.dashboard') }}">
+                                    🏠 Dashboard
+                                </a>
+                            @endif
                         </li>
                         <li
                             class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="{{ route('admin.fire_reports') }}">
-                                📋 Fire Reports
+                            @if ($position === 'Super Admin')
+                                <a href="{{ route('superadmin.fire_reports') }}">
+                                    📋 Fire Reports
+                                </a>
+                            @else
+                                <a href="{{ route('admin.fire_reports') }}">
+                                    📋 Fire Reports
+                                </a>
+                            @endif
+                        </li>
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="{{ route('admin.reports') }}">
+                                📊 Reports and Analytics
                             </a>
                         </li>
                         <li
@@ -41,6 +62,12 @@
                             class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
                             <a href="{{ route('admin.teams') }}">
                                 👥 Teams
+                            </a>
+                        </li>
+                        <li
+                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
+                            <a href="#">
+                                🏛️ Fire Aid
                             </a>
                         </li>
                         <li

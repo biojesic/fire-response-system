@@ -15,4 +15,9 @@ class FireStation extends Pivot
     public function teams() {
         return $this->hasMany(Team::class, 'fireStationId');
     }
+
+    public function barangays() {
+    return $this->hasMany(Barangay::class);
+    }
+
 }   

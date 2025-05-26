@@ -4,54 +4,84 @@ namespace App\Http\Controllers;
 
 use App\Models\Notifications;
 use Illuminate\Http\Request;
+use App\Services\FirebaseService;
 
 class NotificationsController extends Controller
 {
-    public function index()
-    {
-        // Get all notifications
-        return Notifications::with('user')->get();
+    protected $firebaseService;
+
+    // Correct constructor syntax
+    public function __construct(FirebaseService $firebaseService) {
+        $this->firebaseService = $firebaseService;
     }
 
-    public function store(Request $request)
-    {
+    public function sendPushNotification(Request $request) {
+        // Correct the validation syntax
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'token' => 'required|string',
             'title' => 'required|string',
-            'message' => 'required|string',
-            'type' => 'required|in:fire_alert,dispatch_notice',
+            'body' => 'required|string',
+            'data' => 'nullable|array',
         ]);
 
-        // Create a new notification
-        $notification = Notifications::create($request->all());
+        // Get input values
+        $token = $request->input('token');
+        $title = $request->input('title');
+        $body = $request->input('body');
+        $data = $request->input('data', []);
 
-        return response()->json($notification, 201);
+        // Call Firebase service to send the notification
+        $this->firebaseService->sendNotification($token, $title, $body, $data);
+
+        // Fix the response format
+        return response()->json(['message' => 'Notification Sent Successfully']);
     }
 
-    public function show($id)
-    {
-        // Get a single notification
-        return Notifications::with('user')->findOrFail($id);
-    }
+    // public function index()
+    // {
+    //     // Get all notifications
+    //     return Notifications::with('user')->get();
+    // }
 
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'read' => 'required|boolean',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'user_id' => 'required|exists:users,id',
+    //         'title' => 'required|string',
+    //         'message' => 'required|string',
+    //         'type' => 'required|in:fire_alert,dispatch_notice',
+    //     ]);
 
-        $notification = Notifications::findOrFail($id);
-        $notification->update(['read' => $request->read]);
+    //     // Create a new notification
+    //     $notification = Notifications::create($request->all());
 
-        return response()->json($notification);
-    }
+    //     return response()->json($notification, 201);
+    // }
 
-    public function destroy($id)
-    {
-        // Delete the notification
-        $notification = Notifications::findOrFail($id);
-        $notification->delete();
+    // public function show($id)
+    // {
+    //     // Get a single notification
+    //     return Notifications::with('user')->findOrFail($id);
+    // }
 
-        return response()->json(['message' => 'Notification deleted successfully']);
-    }
+    // public function update(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'read' => 'required|boolean',
+    //     ]);
+
+    //     $notification = Notifications::findOrFail($id);
+    //     $notification->update(['read' => $request->read]);
+
+    //     return response()->json($notification);
+    // }
+
+    // public function destroy($id)
+    // {
+    //     // Delete the notification
+    //     $notification = Notifications::findOrFail($id);
+    //     $notification->delete();
+
+    //     return response()->json(['message' => 'Notification deleted successfully']);
+    // }
 }

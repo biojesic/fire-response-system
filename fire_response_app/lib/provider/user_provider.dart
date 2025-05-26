@@ -88,4 +88,24 @@ class UserProvider with ChangeNotifier {
     _isNotificationVisible = isVisible;
     notifyListeners(); // Notify all listeners (UI updates)
   }
+
+  // Future<void> saveFcmToken(String fcmToken) async {
+  //   final response = await http.post(
+  //     Uri.parse(
+  //       '$api/save-fcm-token',
+  //     ), // Adjust your endpoint
+  //     body: json.encode({'fcm_token': fcmToken}),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization':
+  //           'Bearer your_auth_token',
+  //     },
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     print('FCM Token saved successfully');
+  //   } else {
+  //     print('Failed to save FCM token');
+  //   }
+  // }
 }

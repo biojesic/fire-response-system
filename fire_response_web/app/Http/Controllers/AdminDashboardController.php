@@ -63,6 +63,10 @@ class AdminDashboardController extends Controller
             ->where('fireStationId', $firestationId)
             ->get();
 
+             // Retrieve Fire Reports with False Alarm status
+    $falseAlarmFireReports = FireReports::where('status', 'False Alarm')
+        ->where('fireStationId', $firestationId)
+        ->get();
         
 
         return view('admin_pages.dashboard', [
@@ -75,11 +79,16 @@ class AdminDashboardController extends Controller
             'fireStation' => $fireStation,
             'fireReports' => $fireReports,
             'onResponseFirefighters' => $onResponseFirefighters,
+            'falseAlarmFireReports' => $falseAlarmFireReports,
             
         ]);
     }
 
-
+    public function viewFalseAlarmDetails($id)
+{
+    $falseAlarmReport = FireReports::findOrFail($id);
+    return view('admin_pages.falseAlarmDetails', compact('falseAlarmReport'));
+}
     public function showRespondingFirefighters($incidentId) {
     $incident = Incident::find($incidentId);
 
@@ -190,8 +199,9 @@ public function dispatchToIncident(Request $request, $incidentId)
 
     // Dispatch each selected team to the incident
     foreach ($selectedTeamIds as $teamId) {
+        // Find the team that matches the selected teamId and fire station
         $team = Team::where('id', $teamId)
-                    ->where('fireStationId', $firestationId)  // Ensure the team is from the same fire station
+                    ->where('fireStationId', $firestationId)
                     ->first();
 
         if ($team) {
@@ -200,19 +210,20 @@ public function dispatchToIncident(Request $request, $incidentId)
             $team->status = 'On Response'; // Update team status
             $team->save();
 
-            // Log firefighters (only not Off Duty) to firefighter_reports
-            $firefighters = $team->firefighters()
-                                 ->where('status', '!=', 'Off Duty')
-                                 ->get();
+            // Get the firefighters from this team (by teamId) that are not 'Off Duty'
+            $firefighters = Firefighter::where('teamId', $team->id)
+                                       ->where('status', '!=', 'Off Duty')
+                                       ->get();
 
+            // Log firefighters in the firefighter_reports pivot table
             foreach ($firefighters as $firefighter) {
                 FirefighterReports::firstOrCreate([
                     'fireReportId' => $incident->id,
                     'fireFighterId' => $firefighter->id,
                 ]);
             }
-
-            // Update the incident status
+            
+            // Update the incident status to 'Responding'
             $incident->status = 'Responding';
             $incident->save();
         }

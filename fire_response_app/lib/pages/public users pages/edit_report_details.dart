@@ -23,9 +23,9 @@ class _EditDetailsState extends State<EditDetails> {
   void initState() {
     super.initState();
     // Initialize controllers with the selected report's data
-    descriptionController.text = widget.report.description;
-    locationController.text = widget.report.location;
-    landmarkController.text = widget.report.landmark;
+    descriptionController.text = widget.report.description!;
+    locationController.text = widget.report.location!;
+    landmarkController.text = widget.report.landmark!;
   }
 
   @override

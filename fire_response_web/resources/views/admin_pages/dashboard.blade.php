@@ -43,6 +43,17 @@
                                 On Response
                             </button>
                         </li>
+                        <li class="mr-1">
+                            <button
+                                class="inline-block py-2 px-4 text-blue-500 font-semibold border-l border-t border-r rounded-t"
+                                :class="{
+                                    'bg-blue-500 text-white': activeTab === 'falseAlarm',
+                                    'bg-white': activeTab !== 'falseAlarm'
+                                }"
+                                @click="activeTab = 'falseAlarm'" type="button" role="tab">
+                                False Alarm
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab Content -->
@@ -59,6 +70,8 @@
                                             <h4 class="font-semibold">{{ $incident->description }} - Status:
                                                 {{ $incident->status }}</h4>
                                             <p>Location: {{ $incident->location }}</p>
+                                            <p><strong>Time Reported:</strong>
+                                                {{ $incident->created_at->format('g:i a') }}</p>
                                             <form action="{{ route('admin.dispatch', $incident->id) }}" method="POST">
                                                 @csrf
                                                 <!-- Assign Teams -->
@@ -105,39 +118,32 @@
                                             <h4 class="font-semibold">{{ $onResponse->description }} - Status:
                                                 {{ $onResponse->status }}</h4>
                                             <p>Location: {{ $onResponse->location }}</p>
-                                            <div class="mt-4 flex flex-wrap gap-2">
-                                                @if ($onResponse->stage !== 'initial')
-                                                    <!-- Submit Initial Report -->
-                                                    <a href="{{ route('fire-reports.initial.show', $onResponse->id) }}"
-                                                        class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
-                                                        Submit Initial Report
-                                                    </a>
-                                                    {{-- @else
-                                                    <!-- Button is hidden if the stage is 'initial' -->
-                                                    <span class="text-gray-400">Initial Report Submitted</span> --}}
-                                                @endif
+                                            {{-- <p><strong>Time Responded:</strong>
+                                                {{ $fireReports->updated_at->format('g:i a') }}</p> --}}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
 
-                                                <!-- Submit Progress Report -->
-                                                <a href="{{ route('fire-reports.progress.create', $onResponse->id) }}"
-                                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-                                                    Submit Progress Report
-                                                </a>
-
-                                                <!-- Submit Final Report -->
-                                                <a href="{{ route('fire-reports.final.create', $onResponse->id) }}"
-                                                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                                                    Submit Final Report
-                                                </a>
-                                            </div>
-
-
-                                            <form action="{{ route('markAsContained', $onResponse->id) }}"
-                                                method="POST" onsubmit="markAsContained(event, this)">
+                        <!-- False Alarm Tab Content -->
+                        <div x-show="activeTab === 'falseAlarm'" role="tabpanel">
+                            @if ($falseAlarmFireReports->isEmpty())
+                                <p>No false alarm reports at the moment.</p>
+                            @else
+                                <!-- Scrollable Parent Container for False Alarm Reports -->
+                                <div class="bg-white p-4 rounded shadow h-96 overflow-y-auto">
+                                    @foreach ($falseAlarmFireReports as $report)
+                                        <div class="bg-gray-100 p-4 rounded mb-4">
+                                            <h4 class="font-semibold">{{ $report->description }} - Status:
+                                                {{ $report->status }}</h4>
+                                            <p>Location: {{ $report->location }}</p>
+                                            <form action="{{ route('admin.viewDetails', $report->id) }}"
+                                                method="GET">
                                                 @csrf
-                                                <!-- Mark as Contained -->
                                                 <button type="submit"
-                                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">
-                                                    Mark as Contained
+                                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 mt-4">
+                                                    View Details
                                                 </button>
                                             </form>
                                         </div>
@@ -145,6 +151,7 @@
                                 </div>
                             @endif
                         </div>
+
                     </div>
                 </div>
             </section>
@@ -178,7 +185,7 @@
                 </section>
 
                 <!-- New Reports Notification -->
-                <section class="mt-6">
+                {{-- <section class="mt-6">
                     <h3 class="text-xl font-semibold mb-4">New Reports</h3>
                     @if ($newReports->isEmpty())
                         <p>No new reports in the last 24 hours.</p>
@@ -189,7 +196,7 @@
                             @endforeach
                         </ul>
                     @endif
-                </section>
+                </section> --}}
             </div>
 
             <!-- Right Column: Responding Firefighters (Map) -->

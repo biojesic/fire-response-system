@@ -11,6 +11,7 @@ class RealTimeFireReport extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'fire_report_id',
         'stage',
         'content',
@@ -22,5 +23,8 @@ class RealTimeFireReport extends Model
 
     public function fireReport() {
         return $this->belongsTo(FireReport::class, 'fire_report_id');
+    }
+    public function user() {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

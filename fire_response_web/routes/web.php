@@ -5,11 +5,14 @@ use App\Http\Controllers\AuthWebController;
 use App\Http\Controllers\FirefighterWebController;
 use App\Http\Controllers\PersonalEquipmentController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\FireReportsController;
 use App\Http\Controllers\FireReportsWebController;
+use App\Http\Controllers\SuperAdminFireReportsController;
 use App\Http\Controllers\TeamWebController;
 use App\Http\Controllers\FirefighterRankController;
 use App\Http\Controllers\RealTimeFireReportWebController;
+use App\Http\Controllers\BarangayController;
 
 Route::get('/', function () {
     return view('index');
@@ -26,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/fire-reports/{id}/initial', [RealTimeFireReportWebController::class, 'createInitial'])->name('fire-reports.initial');
     Route::post('/fire-reports/{id}/progress', [RealTimeFireReportWebController::class, 'createProgress'])->name('fire-reports.progress');
     Route::post('/fire-reports/{id}/final', [RealTimeFireReportWebController::class, 'createFinal'])->name('fire-reports.final');
+    Route::get('/false-alarm/{id}', [AdminDashboardController::class, 'viewFalseAlarmDetails'])->name('admin.viewDetails');
+
     
     //Admin Firefighters tab
     Route::get('/admin/firefighters', [FirefighterWebController::class, 'index'])->name('admin.firefighters');
@@ -50,7 +55,13 @@ Route::middleware('auth')->group(function () {
     // Admin Fire Reports Tab
     Route::get('/admin/fire-reports', [FireReportsWebController::class, 'index'])->name('admin.fire_reports');
     Route::get('/admin/fire-reports/{report}', [FireReportsWebController::class, 'show'])->name('admin.fire_reports.show');
+    Route::get('/admin/final-report/{id}', [FireReportsWebController::class, 'showFinalReport'])->name('admin.finalreport.show');
+    Route::post('/false-alarm/{id}/confirm', [FireReportsWebController::class, 'confirmFalseAlarm'])->name('admin.confirmFalseAlarm');
 
+
+    // REPORT AND ANALYTICS
+    Route::get('/reports-and-analytics', [FireReportsWebController::class, 'reportsAndAnalytics'])->name('admin.reports');
+    
     // Admin Firefighter Ranks
     Route::resource('admin/firefighterRanks', FirefighterRankController::class);
 });
@@ -76,5 +87,18 @@ Route::middleware('guest')->group(function () {
 Route::post('/dispatch/team/{teamId}', [AdminDashboardController::class, 'dispatchToIncident'])->name('admin.dispatch');
 // Route::post('/dispatch/incident/{incidentId}', [AdminDashboardController::class, 'assignTeamToIncident'])->name('admin.dispatch.incident');
 
+// SUPER ADMIN
+Route::get('/superadmin/dashboard', [SuperAdminController::class, 'showSuperAdminDashboard'])->name('superadmin.dashboard');
+Route::post('superadmin/dispatch/team/{teamId}', [SuperAdminController::class, 'superAdmindispatchToIncident'])->name('superadmin.dispatch');
+Route::get('/superadmin/fire-reports', [SuperAdminFireReportsController::class, 'index'])->name('superadmin.fire_reports');
+Route::post('/users/{userId}/approve', [SuperAdminController::class, 'approveCivilian'])->name('users.approve');
+Route::post('/users/{userId}/reject', [SuperAdminController::class, 'rejectCivilian'])->name('users.reject');
 
 
+
+// BARANGAY
+Route::get('/barangay/dashboard', [BarangayController::class, 'showBrgyDashboard'])
+    ->name('brgy.dashboard');  // No need for role middleware if we're manually checking user roles
+
+
+Route::resource('barangay', BarangayController::class);

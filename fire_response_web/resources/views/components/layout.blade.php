@@ -17,6 +17,15 @@
     {{-- CSS/JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Add some custom JS to handle the confirmation dialog -->
+    <script>
+        function confirmLogout(event) {
+            event.preventDefault(); // Prevent form submission
+            if (confirm("Are you sure you want to log out?")) {
+                event.target.submit(); // If confirmed, submit the form
+            }
+        }
+    </script>
 </head>
 
 <body class="bg-slate-200 text-slate-950">
@@ -33,28 +42,12 @@
                     <a href="{{ route('login') }}" class="custom-button">Login</a>
                 @endguest
 
-                {{-- @auth
-                    <a href="{{ url('firefighters/register') }}" class="nav-link">Register</a>
-                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                @auth
+                    <form action="{{ route('logout') }}" method="POST" class="inline" onsubmit="confirmLogout(event)">
                         @csrf
                         <button type="submit" class="nav-link text-white">Logout</button>
                     </form>
-                    <div class="relative grid place-items-center" x-data="{ open: false }">
-                        <button type="button" class="round-btn" @click="open = ! open">
-                            <img src="https://picsum.photos/200" alt="Avatar">
-                        </button>
-
-                        <!-- Dropdown Menu -->
-                        <div x-show="open"
-                            class="bg-white text-black shadow-lg absolute top-10 right-0 rounded-lg overflow-hidden font-light">
-                            <p class="px-4 py-2 text-sm text-black"> {{ auth()->user()->userFirstName }} </p>
-                            <a href="{{ route('admin.dashboard') }}"
-                                class="block hover:bg-slate-100 px-4 py-2 text-sm text-black mt-2">Dashboard</a>
-                            <a href="{{ route('logout') }}"
-                                class="block hover:bg-slate-100 px-4 py-2 text-sm text-black">Logout</a>
-                        </div>
-                    </div>
-                @endauth --}}
+                @endauth
             </div>
         </nav>
     </header>
@@ -64,14 +57,9 @@
         {{ $slot }}
     </main>
 
-    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous">
-    </script> --}}
     {{-- Google maps --}}
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-
-    </script>
 </body>
 
 </html>

@@ -5,9 +5,9 @@ class FireReport {
   final String location;
   final double? latitude;
   final double? longitude;
-  final String landmark;
-  final String description;
-  final String contactInfo;
+  final String? landmark;
+  final String? description;
+  final String? contactInfo;
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -21,9 +21,9 @@ class FireReport {
     required this.location,
     this.latitude,
     this.longitude,
-    required this.landmark,
-    required this.description,
-    required this.contactInfo,
+    this.landmark,
+    this.description,
+    this.contactInfo,
     required this.status,
     required this.createdAt,
     required this.updatedAt,

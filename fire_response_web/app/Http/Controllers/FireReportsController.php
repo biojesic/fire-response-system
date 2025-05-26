@@ -14,11 +14,21 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
 use App\Models\FireFighterReports;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use App\Models\Barangay;
+use App\Services\FirebaseService;
+
 
 
 class FireReportsController extends Controller
 {
+    protected $firebaseService;
 
+    // Correct constructor syntax
+    public function __construct(FirebaseService $firebaseService) {
+        $this->firebaseService = $firebaseService;
+    }
 
     public function show($id)
     {
@@ -44,6 +54,9 @@ class FireReportsController extends Controller
             'status' => $fireReport->status,
             'created_at' => $fireReport->created_at,
             'updated_at' => $fireReport->updated_at,
+
+            'marked_as_false_alarm_by' => $fireReport->marked_as_false_alarm_by,
+            'marked_as_false_alarm_at' => $fireReport->marked_as_false_alarm_at,
             'marked_as_contained_by_id' => $fireReport->marked_as_contained_by_id,
             'marked_as_contained_at' => $fireReport->marked_as_contained_at
         ]);
@@ -106,15 +119,98 @@ class FireReportsController extends Controller
         return $nearestStation;
     }
 
+    private function findNearestBarangay($latitude, $longitude) {
+        // Fetch all Barangay records (assuming you have a Barangay model)
+        $barangays = Barangay::all(); 
+
+        $nearestBarangay = null;
+        $shortestDistance = PHP_INT_MAX;
+
+        foreach ($barangays as $barangay) {
+            // Calculate the distance between the provided coordinates and each Barangay's coordinates
+            $distance = $this->calculateDistance($latitude, $longitude, $barangay->latitude, $barangay->longitude);
+
+            // Check if the current Barangay is closer
+            if ($distance < $shortestDistance) {
+                $shortestDistance = $distance;
+                $nearestBarangay = $barangay;
+            }
+        }
+
+        // Return the nearest Barangay's ID
+        return $nearestBarangay ? $nearestBarangay->id : null;
+    }
+
+
+    private function sendNotificationToFireAid($fireAid){
+        // Firebase Messaging setup
+        $firebase = (new Factory)->createMessaging();
+        
+        // Get the FCM Token from the Fire Aid
+        $fcmToken = $fireAid->fcm_token;
+
+        if ($fcmToken) {
+            // Create notification message
+            $message = CloudMessage::new()
+                ->withTarget('token', $fcmToken)  // Send to this Fire Aid's FCM token
+                ->withNotification([
+                    'title' => 'New Fire Report',  // Notification title
+                    'body' => 'A new fire incident has been reported near your area. Please respond immediately.'  // Notification body
+                ]);
+
+            // Send notification
+            $firebase->send($message);
+        }
+    }
+
+    private function sendFireReportNotificationToCivilians($fireReport)
+{
+    // Get all civilian users with an FCM token
+    $civilianUsers = User::where('userRole', 'civilian')->whereNotNull('fcm_token')->get();
+
+    // Prepare notification details
+    $title = 'Fire Alert';
+    $body = 'There is a new fire report in your area. Please be aware and stay safe.';
+    $data = [
+        'fire_report_id' => $fireReport->id,  // Additional data for the notification
+    ];
+
+    // Send notification to all civilians
+    foreach ($civilianUsers as $user) {
+        if (!empty($user->fcm_token)) {
+            $this->firebaseService->sendNotification($user->fcm_token, $title, $body, $data);
+        }
+    }
+}
+
+//     // Helper method to send notifications
+// private function sendFireReportNotificationToCivilians($fireReport)
+// {
+//     // Get all civilian users
+//     $civilianUsers = User::where('userRole', 'civilian')->get();
+
+//     // Prepare notification details
+//     $title = 'Fire Alert';
+//     $body = 'There is a new fire report in your area. Please be aware and stay safe.';
+//     $data = [
+//         'fire_report_id' => $fireReport->id,  // Additional data for the notification
+//     ];
+
+//     // Send notification to all civilians
+//     foreach ($civilianUsers as $user) {
+//         if (!empty($user->fcm_token)) {
+//             $this->firebaseService->sendNotification($user->fcm_token, $title, $body, $data);
+//         }
+//     }
+// }
+
     public function quickReport(Request $request)
     {
         $validatedData = $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'location' => 'nullable|string',
-            'landmark' => 'nullable|string',
-            'description' => 'nullable|string',
-            'contact_info' => 'nullable|string',
+
         ]);
 
         $fireReport = new FireReports();
@@ -127,8 +223,7 @@ class FireReportsController extends Controller
         $fireReport->latitude = $request->latitude;
         $fireReport->longitude = $request->longitude;
         $fireReport->location = $request->location ?? 'Unknown Location';
-        $fireReport->landmark = $request->landmark ?? 'No Landmark';
-        $fireReport->description = $request->description ?? 'Emergency Reported via Quick Button';
+        
         $fireReport->status = 'Pending';
         $fireReport->save();
 
@@ -150,22 +245,23 @@ class FireReportsController extends Controller
         return response()->json($reports);
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $fields = $request->validate([
             'location' => 'required',
             'landmark' => 'nullable|max:255',
             'description' => 'nullable',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
-            'contact_info' => 'nullable|string|max:255', // For guests
-            'reported_by' => 'nullable|exists:users,id', //for authenticated users
+            'contact_info' => 'nullable|string|max:255',
+            'reported_by' => 'nullable|exists:users,id',
+            'fire_report_image' => 'nullable|string|max:255'
         ]);
 
         // Ensure latitude & longitude are set
         $latitude = $fields['latitude'] ?? null;
         $longitude = $fields['longitude'] ?? null;
 
+        // If no coordinates are provided, fetch them from the address
         if (!$latitude || !$longitude) {
             $coordinates = $this->getCoordinatesFromAddress($fields['location']);
             if ($coordinates) {
@@ -176,28 +272,41 @@ class FireReportsController extends Controller
             }
         }
 
-        // Find the nearest fire station
+        // Find nearest fire station
         $nearestFireStation = $this->findNearestFireStation($latitude, $longitude);
         if (!$nearestFireStation) {
             return response()->json(['error' => 'No nearby fire station found'], 400);
         }
 
-        // Assign Fire Station & Coordinates
+        // Find nearest Barangay using the provided method
+        $barangay_id = $this->findNearestBarangay($latitude, $longitude);
+
+        if ($barangay_id) {
+            // Assign the nearest Barangay ID to the report
+            $fields['barangay_id'] = $barangay_id;
+        } else {
+            return response()->json(['error' => 'No nearby Barangay found'], 400);
+        }
+
+        // Assign coordinates & fire station
         $fields['latitude'] = $latitude;
         $fields['longitude'] = $longitude;
         $fields['fireStationId'] = $nearestFireStation->id;
 
-        // Determine if request comes from an authenticated user
+        // Authenticated or guest reporting
         if ($request->user()) {
             $fields['reported_by'] = $request->user()->id;
             $fireReport = $request->user()->fireReports()->create($fields);
         } else {
-            // Guest user, store manually
             $fireReport = FireReports::create($fields);
         }
+        $this->sendFireReportNotificationToCivilians($fireReport);
+
 
         return response()->json($fireReport, 201);
     }
+
+
 
     public function update(Request $request, $id)
     {

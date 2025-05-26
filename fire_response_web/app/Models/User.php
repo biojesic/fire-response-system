@@ -30,7 +30,12 @@ class User extends Authenticatable
         'password',
         'userBirthDate',
         'userStatus',
-        'userRole'
+        'userRole',
+        'rejection_reason',
+        'reapply_allowed',
+        'reapplication_count',
+        'id_image',
+        'profile_image', 
     ];
 
     /**
@@ -53,6 +58,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'reapply_allowed' => 'boolean',
+            'reapplication_count' => 'integer',
         ];
     }
 
@@ -69,6 +76,28 @@ class User extends Authenticatable
     public function firefighter()
     {
         return $this->hasOne(Firefighter::class, 'userId');
+    }
+
+    public function markedAsFalseAlarm() {
+    return $this->hasMany(FireReport::class, 'marked_as_false_alarm_by');
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->userStatus === 'Rejected';
+    }
+
+    public function canReapply(): bool
+    {
+        if (!$this->reapply_allowed || $this->userStatus !== 'Rejected') {
+            return false;
+        }
+
+        if (!$this->last_rejection_at) {
+            return true;
+        }
+
+        return now()->diffInDays($this->last_rejection_at) >= 7;
     }
 
 }

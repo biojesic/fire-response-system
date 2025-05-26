@@ -253,7 +253,7 @@ class RealTimeFireReportController extends Controller {
         'message' => 'Fire report (final stage) has been submitted successfully.',
         'submitted_data' => $content,
         'fire_report_id' => $fireReportFinal->fire_report_id,
-        'fire_report_stage' => $fireReportFinal->stage,
+        'stage' => $fireReportFinal->stage,
         'user_id' => $user->id,
     ], 201);
 }

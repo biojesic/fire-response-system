@@ -1,20 +1,20 @@
 class User {
   final int id;
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String address;
-  final String contactNumber;
-  final String birthDate;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final String? address;
+  final String? contactNumber;
+  final String? birthDate;
 
   User({
     required this.id,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.address,
-    required this.contactNumber,
-    required this.birthDate,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.address,
+    this.contactNumber,
+    this.birthDate,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -29,15 +29,17 @@ class User {
     );
   }
 
+  String? get userFirstName => firstName;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userFirstName': firstName,
-      'userLastName': lastName,
-      'email': email,
-      'userAddress': address,
-      'userContactNumber': contactNumber,
-      'userBirthDate': birthDate,
+      'userFirstName': firstName ?? '',
+      'userLastName': lastName ?? '',
+      'email': email ?? '',
+      'userAddress': address ?? '',
+      'userContactNumber': contactNumber ?? '',
+      'userBirthDate': birthDate ?? '',
     };
   }
 }

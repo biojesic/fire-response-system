@@ -102,13 +102,15 @@ class FirefighterReportsProvider with ChangeNotifier {
     final String apiUrl = '$api/fire-report/$fireReportId/final';
     final Map<String, String> headers = {
       'Content-Type': 'application/json',
-      // 'Authorization': 'Bearer $token',
+      'Accept': 'application/json', 
+      'Authorization': 'Bearer $token',
     };
 
-    // Debugging: Print the API URL and the body of the request
+    // Debugging: Print the API URL, the body of the request, and the headers
     print('API URL: $apiUrl');
     print('Request Body: $body');
     print('Authorization Header: Bearer $token');
+    print('Headers: $headers');
 
     try {
       final response = await http.post(
@@ -124,6 +126,7 @@ class FirefighterReportsProvider with ChangeNotifier {
       if (response.statusCode == 201) {
         // If the request was successful, show a success message
         final data = jsonDecode(response.body);
+        print('Success Response: $data');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Report submitted successfully: ${data['message']}'),
@@ -131,6 +134,10 @@ class FirefighterReportsProvider with ChangeNotifier {
         );
       } else {
         // If the request failed, show an error message
+        print(
+          'Failed to submit the report. Status Code: ${response.statusCode}',
+        );
+        print('Failed Response Body: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -138,17 +145,13 @@ class FirefighterReportsProvider with ChangeNotifier {
             ),
           ),
         );
-        print(
-          'Failed to submit the report. Status Code: ${response.statusCode}',
-        );
-        print('Response Body: ${response.body}');
       }
     } catch (error) {
       // Handle any errors that may occur during the API call
+      print('Error submitting final report: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred. Please try again later.')),
       );
-      print('Error submitting final report: $error');
     }
   }
 }

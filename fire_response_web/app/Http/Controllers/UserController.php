@@ -34,5 +34,21 @@ class UserController extends Controller
             'firefighter_id' => $user->firefighter->id,
         ]);
     }
+
+    public function saveFcmToken(Request $request) {
+        // Validate the incoming request
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        // Assuming the user is authenticated (if not, handle accordingly)
+        $user = $request->user();  // Get authenticated user
+
+        // Update the FCM token in the database
+        $user->fcm_token = $request->input('fcm_token');
+        $user->save();
+
+        return response()->json(['message' => 'FCM token saved successfully']);
+    }
     
 }

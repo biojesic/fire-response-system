@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Password;
 class AuthController extends Controller
 {
 
-
     public function register(Request $request)
     {
         // Validate incoming request
@@ -27,6 +26,8 @@ class AuthController extends Controller
             'userAddress' => 'required|string|max:100000',
             'userBirthDate' => 'nullable|date',
             'password' => 'required|string|min:8|confirmed',
+            'id_image' => 'required|image|mimes:jpeg,png,jpg|max:10000',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // Initialize coordinates
@@ -50,6 +51,19 @@ class AuthController extends Controller
             Log::warning('Geocoding failed: ' . $e->getMessage());
         }
 
+        // Handle file uploads
+        if ($request->hasFile('id_image')) {
+            $idImagePath = $request->file('id_image')->store('user_images', 'public');
+        } else {
+            // Should never happen since id_image is required, but just in case
+            $idImagePath = null;
+        }
+
+        $profileImagePath = null;
+        if ($request->hasFile('profile_image')) {
+            $profileImagePath = $request->file('profile_image')->store('user_images', 'public');
+        }
+
         // Create a civilian user
         $user = User::create([
             'userFirstName' => $fields['userFirstName'],
@@ -60,9 +74,11 @@ class AuthController extends Controller
             'userBirthDate' => $fields['userBirthDate'],
             'password' => bcrypt($fields['password']),
             'userRole' => 'civilian',
-            'userStatus' => 'Active',
+            'userStatus' => 'Unverified',
             'latitude' => $latitude,
             'longitude' => $longitude,
+            'id_image' => $idImagePath,
+            'profile_image' => $profileImagePath,
         ]);
 
         // Generate token
@@ -88,6 +104,26 @@ class AuthController extends Controller
                 'msg' => 'Credentials incorrect.'
             ];
         }
+
+        if ($user->userStatus === 'Rejected') {
+        return response()->json([
+            'message' => 'Your registration was rejected.',
+            'rejection_reason' => $user->rejection_reason,
+            'can_reapply' => $user->reapply_allowed,
+        ], 403);
+        }
+
+        if ($user->userStatus === 'Inactive') {
+            return response()->json([
+                'message' => 'Your account is currently inactive. Contact support.'
+            ], 403);
+        }
+
+        if ($user->userStatus === 'Unverified') {
+        return response()->json([
+            'message' => 'Your account is still under verification.'
+        ], 403);
+    }
 
         $token = $user->createToken($request->email)->plainTextToken;
 

@@ -1,5 +1,8 @@
 // import 'package:fire_response_app/provider/assigned_incident_provider.dart';
+// import 'package:fire_response_app/firebase.dart';
+import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_home.dart';
 import 'package:fire_response_app/provider/assigned_incident_provider.dart';
+import 'package:fire_response_app/provider/fire_aid_provider.dart';
 import 'package:fire_response_app/provider/firefighter_provider.dart';
 import 'package:fire_response_app/provider/firefighter_reports_provider.dart';
 import 'package:fire_response_app/provider/location_provider.dart';
@@ -17,13 +20,16 @@ import 'package:fire_response_app/theme.dart';
 import 'package:fire_response_app/pages/auth%20pages/login.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_home.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/civilians_home.dart';
+// import 'package:flutter_timezone/flutter_timezone.dart' as tz;
 
 import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // await FirebaseApi().initNotifications();
+  // await tz.FlutterTimezone.getLocalTimezone();
+  // await tz.FlutterTimezone.getAvailableTimezones();
   runApp(
     MultiProvider(
       providers: [
@@ -51,6 +57,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AssignedIncidentProvider()),
         ChangeNotifierProvider(create: (context) => SubmitReportProvider()),
         ChangeNotifierProvider(create: (context) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => FireAidProvider()),
       ],
       child: const MyApp(),
     ),
@@ -78,9 +85,13 @@ class MyApp extends StatelessWidget {
           final authProvider = Provider.of<AuthProvider>(context);
 
           if (authProvider.isLoggedIn) {
-            return authProvider.userRole == "firefighter"
-                ? FirefightersHome()
-                : CiviliansHomePage();
+            if (authProvider.userRole == "firefighter") {
+              return FirefightersHome();
+            } else if (authProvider.userRole == "Barangay") {
+              return FireAidHomePage(); // FireAidHomePage for FireAid users
+            } else {
+              return CiviliansHomePage();
+            }
           } else {
             return LoginPage();
           }

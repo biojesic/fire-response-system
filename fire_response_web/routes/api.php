@@ -18,6 +18,9 @@ use App\Models\FireReports;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use App\Http\Controllers\RouteApiController;
 use App\Http\Controllers\RealTimeFireReportController;
+use App\Http\Controllers\BarangayFireAidController;
+// use App\Http\Controllers\UserController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -31,7 +34,7 @@ Route::put('/fire-reports/{fireReport}/mark-contained', [RealTimeFireReportContr
 
 // REAL TIME FIRE REPORTS
 // Route::middleware('auth:sanctum')->post('/fire-report/{id}/final', [RealTimeFireReportApiController::class, 'createFinal']);
-Route::post('/fire-report/{id}/final', [RealTimeFireReportController::class, 'createFinal']);
+Route::post('/fire-report/{id}/final', [RealTimeFireReportController::class, 'createFinal'])->middleware('auth:sanctum');
 
 // AUTHENTICATION
 Route::post('/register', [AuthController::class, 'register']);
@@ -40,6 +43,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::put('/user/{id}', [UserController::class, 'update'])->middleware('auth:sanctum');
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+//USER CONTROLLER
+Route::post('/save-fcm-token', [UserController::class, 'saveFcmToken'])->middleware('auth:sanctum');
+
 
 // FIRE STATIONS
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -66,8 +73,6 @@ Route::resource('firefighters', FirefighterController::class);
 Route::post('/register-firefighter', [FirefighterController::class, 'registerFirefighter'])->middleware('auth:sanctum');
 Route::middleware('auth:sanctum')->get('/assigned-fire-reports', [FirefighterController::class, 'getAssignedFireReports']);
 
-
-
 // FIRE FIGHTER POSITIONS
 Route::get('/firefighter-positions', [FirefighterPositionController::class, 'index']);
 Route::post('/firefighter-positions', [FirefighterPositionController::class, 'store']);
@@ -78,7 +83,7 @@ Route::resource('firefighter_reports', FirefighterReportsController::class);
 
 Route::get('/assigned-incident/{firefighterId}', [AssignedIncidentController::class, 'showAssignedIncidentByFirefighter']);
 
-Route::resource('notifications', NotificationsController::class);
+// Route::resource('notifications', NotificationsController::class);
 
 Route::post('/update-location', [LocationController::class, 'updateLocation']);
 Route::get('/get-locations', [LocationController::class, 'getLocations']);
@@ -89,6 +94,20 @@ Route::post('/update-eta', [RouteApiController::class, 'storeETA']);
 
 // PUBLIC AWARENESS MODULE
 Route::get('/ongoing-incidents', [FireReportsController::class, 'getOngoingIncidents']);
+
+// BRGY FIRE AID
+Route::put('/fire-aid/{id}', [BarangayFireAidController::class, 'update'])->middleware('auth:sanctum');
+Route::post('/register/fire-aid', [BarangayFireAidController::class, 'store']);
+Route::get('/fire-aid', [BarangayFireAidController::class, 'show'])->middleware('auth:sanctum');
+Route::post('/fire-aid/{id}/mark-false-alarm', [BarangayFireAidController::class, 'markAsFalseAlarm'])->middleware('auth:sanctum');
+Route::get('/barangay/{barangay_id}/fire-reports', [BarangayFireAidController::class, 'showBarangayReportsForFireAids'])->middleware('auth:sanctum');
+
+// NOTIF
+Route::post('/send-notification', [NotificationsController::class, 'sendPushNotification'])->middleware('auth:sanctum');
+
+
+
+
 
 
 

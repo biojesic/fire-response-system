@@ -15,6 +15,22 @@
             <p><strong>Additional Details:</strong> {{ $report->additional_details ?? 'N/A' }}</p>
         </div>
 
-        <a href="{{ route('admin.fire_reports') }}" class="text-blue-500 hover:underline mt-4">Back to Fire Reports</a>
+        @php
+            $position = Auth::user()->firefighter?->position?->position_name;
+            // dd($position);
+        @endphp
+
+        <li>
+            @if ($position === 'Super Admin')
+                <a href="{{ route('superadmin.fire_reports') }}" class="text-blue-500 hover:underline mt-4">Back to Fire
+                    Reports</a>
+            @else
+                <a href="{{ route('admin.fire_reports') }}" class="text-blue-500 hover:underline mt-4">Back to Fire
+                    Reports</a>
+            @endif
+        </li>
+        <li><a href="{{ route('admin.finalreport.show', $report) }}" class="text-blue-500 hover:underline mt-4">View
+                Final
+                Report</a></li>
     </div>
 </x-dashboard>

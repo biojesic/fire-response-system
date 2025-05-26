@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fire_response_app/api.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,6 +34,32 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> saveFcmToken(String fcmToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? authToken = _token; // Get current token from _token
+
+    if (authToken == null) {
+      print("No auth token found");
+      return;
+    }
+
+    // Make sure you're sending the correct Authorization token (the one you already saved)
+    final response = await http.post(
+      Uri.parse('$api/save-fcm-token'),
+      body: json.encode({'fcm_token': fcmToken}),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('FCM Token saved successfully');
+    } else {
+      print('Failed to save FCM token: ${response.statusCode}');
+    }
+  }
+
   Future<String?> register({
     required String email,
     required String password,
@@ -39,49 +67,61 @@ class AuthProvider extends ChangeNotifier {
     required String firstname,
     required String lastname,
     required String address,
+    required File idImageFile,
+    required File profileImageFile,
   }) async {
-    // Check if passwords match
     if (password != confirmPassword) {
       return "Passwords do not match";
     }
 
+    if (idImageFile.path.isEmpty || profileImageFile.path.isEmpty) {
+      return "Both ID image and Profile image are required.";
+    }
+
     try {
-      final response = await http.post(
-        Uri.parse("$api/register"),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-          "password_confirmation": confirmPassword,
-          "userFirstName": firstname,
-          "userLastName": lastname,
-          "userAddress": address,
-          "userContactNumber": "",
-          "userBirthDate": "",
-        }),
+      var uri = Uri.parse("$api/register");
+
+      var request =
+          http.MultipartRequest('POST', uri)
+            ..fields['email'] = email
+            ..fields['password'] = password
+            ..fields['password_confirmation'] = confirmPassword
+            ..fields['userFirstName'] = firstname
+            ..fields['userLastName'] = lastname
+            ..fields['userAddress'] = address
+            ..fields['userContactNumber'] = ""
+            ..fields['userBirthDate'] = "";
+
+      request.files.add(
+        await http.MultipartFile.fromPath('id_image', idImageFile.path),
       );
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'profile_image',
+          profileImageFile.path,
+        ),
+      );
+
+      request.headers.addAll({"Accept": "application/json"});
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
 
       print("Status Code: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
-      // Handle the response based on status code
       if (response.statusCode == 201) {
-        // Success
-        return null;
+        return null; // Success
       } else {
         try {
           final responseBody = jsonDecode(response.body);
           return responseBody["message"] ?? "Registration failed";
         } catch (e) {
-          print("Server responded with non-JSON: ${response.body}");
           return "Unexpected server response. Please try again later.";
         }
       }
     } catch (e) {
-      // Handle unexpected errors (e.g., network issues)
       return "An error occurred: $e";
     }
   }
