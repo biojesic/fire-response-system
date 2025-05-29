@@ -1,96 +1,166 @@
 <x-layout>
 
+    {{-- <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style> --}}
+
     <body class="bg-gray-100 font-sans antialiased">
         <div class="flex min-h-screen w-full">
 
-            <!-- Sidebar -->
-            <aside class="w-55 bg-gray-300 shadow-xl rounded-lg fixed left-3 top-22 bottom-5 p-6">
+            @php
+                $position = Auth::user()->firefighter?->position?->position_name;
+            @endphp
+
+            <aside
+                class="w-55 bg-gray-300 shadow-xl rounded-lg fixed left-3 top-22 bottom-5 p-6 overflow-y-auto no-scrollbar">
+
                 <div class="px-6 py-6 text-center border-b border-red-400">
-                    <img src="https://picsum.photos/100" alt="Logo" class="rounded-full mb-4 mx-auto shadow-md">
+                    <img src="{{ asset('storage/user_images/HVnfUPUd7txYD9yrbf0rpEh2OwKlTaS0DgiMEPsR.jpg') }}"
+                        alt="Logo" class="rounded-full mb-4 mx-auto shadow-md">
                     <h2 class="text-xl font-semibold">Admin Panel</h2>
                 </div>
 
-                <nav class="mt-6">
-                    <ul class="space-y-1 text-sm w-full">
-                        <!-- Sidebar links -->
-                        @php
-                            $position = Auth::user()->firefighter?->position?->position_name;
-                        @endphp
-                        <li
-                            class="flex items-center gap-2 py-2 px-2 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            @if ($position === 'Super Admin')
-                                <a href="{{ route('superadmin.dashboard') }}">
-                                    🏠 Dashboard
-                                </a>
-                            @else
-                                <a href="{{ route('admin.dashboard') }}">
-                                    🏠 Dashboard
-                                </a>
-                            @endif
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            @if ($position === 'Super Admin')
-                                <a href="{{ route('superadmin.fire_reports') }}">
-                                    📋 Fire Reports
-                                </a>
-                            @else
-                                <a href="{{ route('admin.fire_reports') }}">
-                                    📋 Fire Reports
-                                </a>
-                            @endif
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="{{ route('admin.reports') }}">
-                                📊 Reports and Analytics
-                            </a>
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="{{ route('admin.firefighters') }}">
-                                👨‍🚒 Firefighters
-                            </a>
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transitio">
-                            <a href="{{ route('admin.equipment.list') }}">
-                                🧰 Equipments
-                            </a>
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="{{ route('admin.teams') }}">
-                                👥 Teams
-                            </a>
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="#">
-                                🏛️ Fire Aid
-                            </a>
-                        </li>
-                        <li
-                            class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition">
-                            <a href="#">
-                                ⚙️ Settings
-                            </a>
-                        </li>
+                @if ($position === 'Provincial Director' || $position === 'Super Admin')
+                    <nav class="mt-6 text-sm w-full">
+                        <ul class="space-y-1">
 
-                        <!-- Logout Button with Confirmation -->
-                        <li>
-                            <form action="{{ route('logout') }}" method="POST" class="w-full" id="logoutForm">
-                                @csrf
-                                <button type="button"
-                                    class="flex items-center gap-2 py-2 px-4 rounded w-full hover:bg-red-800 hover:text-white transition"
-                                    onclick="return confirmLogout(event)">
-                                    🚪 Logout
+                            <li class="pl-4">
+                                <a href="{{ route('superadmin.dashboard') }}"
+                                    class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                    🚨 Fire Response
+                                </a>
+                            </li>
+                            <li class="pl-4">
+                                <a href="#"
+                                    class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                    🏠 Dashboard
+                                </a>
+                            </li>
+
+                            {{-- RESOURCES --}}
+                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                                <button @click="open = !open"
+                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                    <span class="flex items-center gap-2">
+                                        📦 Resources
+                                    </span>
+                                    <span x-text="open ? '▲' : '▼'"></span>
                                 </button>
-                            </form>
-                        </li>
-                    </ul>
-                </nav>
+                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            🏢 Fire Stations
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.firefighters') }}"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            👨‍🚒 Firefighters
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.teams') }}"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            👥 Teams
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.equipment.list') }}"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            🧰 Equipment
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            {{-- USER MANAGEMENT --}}
+                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                                <button @click="open = !open"
+                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                    <span class="flex items-center gap-2">
+                                        👥 User Management
+                                    </span>
+                                    <span x-text="open ? '▲' : '▼'"></span>
+                                </button>
+                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            🧍 Civilians
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            🏘️ Barangays
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+
+                            {{-- REPORTS & INSIGHTS --}}
+                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                                <button @click="open = !open"
+                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                    <span class="flex items-center gap-2">
+                                        📋 Reports & Insights
+                                    </span>
+                                    <span x-text="open ? '▲' : '▼'"></span>
+                                </button>
+                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                    <li>
+                                        <a href="{{ route('superadmin.fire_reports') }}"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            📋 Fire Reports
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.reports') }}"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            📊 Analytics
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            {{-- SETTINGS --}}
+                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                                <button @click="open = !open"
+                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                    <span class="flex items-center gap-2">
+                                        ⚙️ Settings
+                                    </span>
+                                    <span x-text="open ? '▲' : '▼'"></span>
+                                </button>
+                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                            ⚙️ System Settings
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('logout') }}" method="POST" id="logoutForm">
+                                            @csrf
+                                            <button type="button"
+                                                class="flex items-center gap-2 py-2 px-2 rounded w-full hover:bg-red-800 hover:text-white transition"
+                                                onclick="return confirmLogout(event)">
+                                                🚪 Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </nav>
+                @endif
             </aside>
+
             <section>
                 {{ $slot }}
             </section>
