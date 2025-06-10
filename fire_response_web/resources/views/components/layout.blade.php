@@ -39,14 +39,17 @@
             <div class="flex items-center gap-4">
                 @guest
                     <a href="{{ route('home') }}" class="custom-button">Home</a>
+                    <a href="{{ route('barangay.create') }}" class="custom-button">Register Barangay</a>
                     <a href="{{ route('login') }}" class="custom-button">Login</a>
                 @endguest
 
                 @auth
-                    <form action="{{ route('logout') }}" method="POST" class="inline" onsubmit="confirmLogout(event)">
-                        @csrf
-                        <button type="submit" class="nav-link text-white">Logout</button>
-                    </form>
+                    @if (auth()->user()->userRole == 'Barangay')
+                        <form action="{{ route('logout') }}" method="POST" class="inline" onsubmit="confirmLogout(event)">
+                            @csrf
+                            <button type="submit" class="nav-link text-white">Logout</button>
+                        </form>
+                    @endif
                 @endauth
             </div>
         </nav>

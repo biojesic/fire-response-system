@@ -1,4 +1,5 @@
 import 'package:fire_response_app/pages/auth%20pages/forgotpassword.dart';
+import 'package:fire_response_app/pages/auth%20pages/reapply_email.dart';
 import 'package:fire_response_app/pages/auth%20pages/register.dart';
 import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_home.dart';
 import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_register.dart';
@@ -28,7 +29,6 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    // Handle foreground notifications (when the app is open)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
       // You can show an alert or update the UI here for the notification
@@ -53,17 +53,12 @@ class _LoginPageState extends State<LoginPage> {
       );
     });
 
-    // Handle background notifications (when the app is in the background or terminated)
     FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
       print('Background message received: ${message.notification?.title}');
-      // Handle background message here
     });
 
-    // Handle when the user taps on a notification (whether the app is in the background or terminated)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('Notification clicked: ${message.notification?.title}');
-      // Navigate to a specific screen when the notification is tapped
-      // Example: Navigate to home screen or another screen
     });
   }
 
@@ -73,353 +68,345 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade400,
-      body: SingleChildScrollView(
-        child: Container(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height,
-          ),
-          // height: MediaQuery.of(context).size.height,
-          width: double.infinity,
-          padding: EdgeInsets.fromLTRB(35, 60, 35, 10),
-          child: Column(
-            children: [
-              // Align widget to correctly position the 'Login' text
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  'Login',
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.poppins().fontFamily,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 26,
-                    color: Colors.black, // Ensure the text color is visible
-                  ),
-                ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
               ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  'Please sign in to continue.',
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.poppins().fontFamily,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 17,
-                    color: Colors.black, // Ensure the text color is visible
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(255, 187, 161, 161),
-                      blurRadius: 6,
-                      offset: Offset(3, 3),
-                    ),
-                  ],
-                ),
-                child: TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 14),
-                    prefixIcon: Icon(Icons.email_outlined),
-                    hintText: "Enter your email",
-                  ),
-                  style: TextStyle(color: Colors.black),
-                  cursorColor: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(255, 187, 161, 161),
-                      blurRadius: 6,
-                      offset: Offset(3, 3),
-                    ),
-                  ],
-                ),
-                child: TextFormField(
-                  controller: passwordController,
-                  obscureText: _isObscured,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 14),
-                    prefixIcon: Icon(Icons.lock_outline_rounded),
-                    hintText: "Enter your password",
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isObscured ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isObscured = !_isObscured;
-                        });
-                      },
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                  ),
-                  style: TextStyle(color: Colors.black),
-                  cursorColor: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 5),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Forgotpassword()),
-                  );
-                },
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        "Forgot Password?",
-                        style: TextStyle(color: Colors.black, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // LOGIN BUTTON WITH LOADING STATE
-              _isLoading
-                  ? CircularProgressIndicator(color: Colors.black)
-                  : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          FocusScope.of(context).unfocus();
-
-                          if (emailController.text.trim().isEmpty ||
-                              passwordController.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Please enter both email and password",
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          setState(() {
-                            _isLoading = true;
-                          });
-
-                          String? result = await authProvider.login(
-                            email: emailController.text.trim(),
-                            password: passwordController.text.trim(),
-                          );
-
-                          setState(() {
-                            _isLoading = false;
-                          });
-
-                          if (result == null) {
-                            String userRole = authProvider.userRole;
-
-                            if (userRole == "firefighter") {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FirefightersHome(),
-                                ),
-                              );
-                            } else if (userRole == "civilian") {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CiviliansHomePage(),
-                                ),
-                              );
-                            } else if (userRole == "Barangay") {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FireAidHomePage(),
-                                ), // Create or link this page
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Unknown user role: $userRole"),
-                                ),
-                              );
-                            }
-                          } else {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text(result)));
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(160, 40),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              "LOGIN",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontFamily: GoogleFonts.poppins().fontFamily,
-                                fontSize: 18,
-                              ),
-                            ),
-                            SizedBox(width: 15),
-                            Icon(
-                              Icons.arrow_forward_rounded,
-                              color: Colors.black,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-              const SizedBox(height: 5),
-              Padding(
-                padding: EdgeInsets.all(5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account? ",
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(35, 150, 35, 10),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'Login',
                       style: TextStyle(
                         fontFamily: GoogleFonts.poppins().fontFamily,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 26,
                         color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegisterPage(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        "Sign Up.",
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontFamily: GoogleFonts.poppins().fontFamily,
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 5),
-              Row(
-                children: [
-                  Text(
-                    'Create an Account as a ',
-                    style: TextStyle(
-                      // decoration: TextDecoration.underline,
-                      fontFamily: GoogleFonts.poppins().fontFamily,
-                      color: Colors.black,
-                      fontSize: 14,
-                      // fontWeight: FontWeight.w900,
                     ),
                   ),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'Please sign in to continue.',
+                      style: TextStyle(
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 17,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(255, 187, 161, 161),
+                          blurRadius: 6,
+                          offset: Offset(3, 3),
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(top: 14),
+                        prefixIcon: Icon(Icons.email_outlined),
+                        hintText: "Enter your email",
+                      ),
+                      style: TextStyle(color: Colors.black),
+                      cursorColor: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(255, 187, 161, 161),
+                          blurRadius: 6,
+                          offset: Offset(3, 3),
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: passwordController,
+                      obscureText: _isObscured,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(top: 14),
+                        prefixIcon: Icon(Icons.lock_outline_rounded),
+                        hintText: "Enter your password",
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isObscured
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isObscured = !_isObscured;
+                            });
+                          },
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                      ),
+                      style: TextStyle(color: Colors.black),
+                      cursorColor: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
                   InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => FireAidRegisterPage(),
+                          builder: (context) => Forgotpassword(),
                         ),
                       );
                     },
-                    child: Text(
-                      'Baranggay Fire Aid',
-                      style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        fontFamily: GoogleFonts.poppins().fontFamily,
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            "Forgot Password?",
+                            style: TextStyle(color: Colors.black, fontSize: 12),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: Divider(color: Colors.black)),
+                  // LOGIN BUTTON WITH LOADING STATE
+                  _isLoading
+                      ? CircularProgressIndicator(color: Colors.black)
+                      : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              FocusScope.of(context).unfocus();
+
+                              if (emailController.text.trim().isEmpty ||
+                                  passwordController.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Please enter both email and password",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              setState(() {
+                                _isLoading = true;
+                              });
+
+                              String? result = await authProvider.login(
+                                email: emailController.text.trim(),
+                                password: passwordController.text.trim(),
+                              );
+
+                              setState(() {
+                                _isLoading = false;
+                              });
+
+                              if (result == null) {
+                                String userRole = authProvider.userRole;
+
+                                if (userRole == "firefighter") {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FirefightersHome(),
+                                    ),
+                                  );
+                                } else if (userRole == "civilian") {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CiviliansHomePage(),
+                                    ),
+                                  );
+                                } else if (userRole == "Barangay") {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FireAidHomePage(),
+                                    ), // Create or link this page
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Unknown user role: $userRole",
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(SnackBar(content: Text(result)));
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(160, 40),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "LOGIN",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontFamily:
+                                        GoogleFonts.poppins().fontFamily,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(width: 15),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: Colors.black,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                  const SizedBox(height: 5),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('OR'),
+                    padding: EdgeInsets.all(5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Don't have an account? ",
+                          style: TextStyle(
+                            fontFamily: GoogleFonts.poppins().fontFamily,
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RegisterPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Sign Up.",
+                            style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Expanded(child: Divider(color: Colors.black)),
+                  SizedBox(height: 5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Create an Account as a ',
+                        style: TextStyle(
+                          // decoration: TextDecoration.underline,
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          color: Colors.black,
+                          fontSize: 14,
+                          // fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FireAidRegisterPage(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Baranggay Fire Aid',
+                          style: TextStyle(
+                            decoration: TextDecoration.underline,
+                            fontFamily: GoogleFonts.poppins().fontFamily,
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-
-              const SizedBox(height: 20),
-              // EMERGENCY BUTTON
-              Container(
-                child: AnimatedContainer(
-                  duration: Duration(seconds: 1),
-                  curve: Curves.easeInOut,
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EmergencyReport(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[400],
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 8,
-                    ),
-                    child: Text(
-                      'REPORT A FIRE EMERGENCY',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+            ),
+          ),
+          Positioned(
+            right: 25,
+            bottom: 45,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Rejected application? ',
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.poppins().fontFamily,
+                    color: Colors.black,
+                    fontSize: 13,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => EnterEmail()),
+                    );
+                  },
+                  child: Text(
+                    'Click here',
+                    style: TextStyle(
+                      fontFamily: GoogleFonts.poppins().fontFamily,
+                      color: Colors.blueAccent,
+                      fontSize: 13,
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

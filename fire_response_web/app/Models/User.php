@@ -35,7 +35,8 @@ class User extends Authenticatable
         'reapply_allowed',
         'reapplication_count',
         'id_image',
-        'profile_image', 
+        'profile_image',
+        'last_rejection_at'
     ];
 
     /**

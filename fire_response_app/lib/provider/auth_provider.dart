@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:fire_response_app/api.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +15,7 @@ class AuthProvider extends ChangeNotifier {
   static const String api = API.baseUrl;
   bool get isLoggedIn => _isLoggedIn;
   String? get token => _token;
+  Map<String, dynamic>? applicantData;
 
   Future<void> _saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -67,6 +67,8 @@ class AuthProvider extends ChangeNotifier {
     required String firstname,
     required String lastname,
     required String address,
+    required String contactNumber,
+    required String birthDate,
     required File idImageFile,
     required File profileImageFile,
   }) async {
@@ -89,8 +91,8 @@ class AuthProvider extends ChangeNotifier {
             ..fields['userFirstName'] = firstname
             ..fields['userLastName'] = lastname
             ..fields['userAddress'] = address
-            ..fields['userContactNumber'] = ""
-            ..fields['userBirthDate'] = "";
+            ..fields['userContactNumber'] = contactNumber
+            ..fields['userBirthDate'] = birthDate;
 
       request.files.add(
         await http.MultipartFile.fromPath('id_image', idImageFile.path),
@@ -241,6 +243,86 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       print("Error fetching firefighter ID: $e");
       return null;
+    }
+  }
+
+  Future<bool> fetchRejectedApplicant(String email) async {
+    final url = Uri.parse('$api/civilian/rejected?email=$email');
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      applicantData = jsonDecode(response.body);
+      notifyListeners();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<String?> reapply({
+    required String email,
+    required String password,
+    required String confirmPassword,
+    required String firstname,
+    required String lastname,
+    required String address,
+    required String contactNumber,
+    required String birthDate,
+    required File idImageFile,
+    required File profileImageFile,
+  }) async {
+    if (password != confirmPassword) {
+      return "Passwords do not match";
+    }
+
+    if (idImageFile.path.isEmpty || profileImageFile.path.isEmpty) {
+      return "Both ID image and Profile image are required.";
+    }
+
+    try {
+      var uri = Uri.parse("$api/civilian/reapply");
+
+      var request =
+          http.MultipartRequest('POST', uri)
+            ..fields['email'] = email
+            ..fields['password'] = password
+            ..fields['password_confirmation'] = confirmPassword
+            ..fields['userFirstName'] = firstname
+            ..fields['userLastName'] = lastname
+            ..fields['userAddress'] = address
+            ..fields['userContactNumber'] = contactNumber
+            ..fields['userBirthDate'] = birthDate;
+
+      // Add ID image to the request
+      request.files.add(
+        await http.MultipartFile.fromPath('id_image', idImageFile.path),
+      );
+
+      // Add Profile image to the request
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'profile_image',
+          profileImageFile.path,
+        ),
+      );
+
+      request.headers.addAll({"Accept": "application/json"});
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return null; // Success
+      } else {
+        try {
+          final responseBody = jsonDecode(response.body);
+          return responseBody["message"] ?? "Reapplication failed";
+        } catch (e) {
+          return "Unexpected server response. Please try again later.";
+        }
+      }
+    } catch (e) {
+      return "An error occurred: $e";
     }
   }
 }

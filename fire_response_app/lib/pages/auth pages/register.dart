@@ -23,6 +23,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final TextEditingController contactNumberController = TextEditingController();
+  final TextEditingController birthDateController = TextEditingController();
 
   bool _isLoading = false;
   bool _isObscured = true;
@@ -103,6 +105,21 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != DateTime.now()) {
+      setState(() {
+        birthDateController.text =
+            "${picked.toLocal()}".split(' ')[0]; // Formatting to YYYY-MM-DD
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -159,6 +176,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 Icons.home_outlined,
               ),
               const SizedBox(height: 15),
+              _buildTextField(
+                contactNumberController,
+                "Enter your contact number",
+                Icons.phone,
+              ),
+              const SizedBox(height: 15),
               _buildPasswordField(
                 passwordController,
                 "Enter your password",
@@ -175,6 +198,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 () {
                   setState(() => _isObscuredConfirm = !_isObscuredConfirm);
                 },
+              ),
+              const SizedBox(height: 15),
+              _buildDateField(
+                birthDateController,
+                "Select your birthdate",
+                () => _selectDate(context),
               ),
               const SizedBox(height: 20),
 
@@ -210,7 +239,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
-              /// Valid ID Upload Section
+              // Valid ID Upload Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -242,7 +271,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 40),
 
-              /// Sign Up Button
+              // Sign Up Button
               ElevatedButton(
                 onPressed:
                     _isLoading
@@ -257,7 +286,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               emailController.text.trim().isEmpty ||
                               passwordController.text.trim().isEmpty ||
                               confirmPasswordController.text.trim().isEmpty ||
-                              addressController.text.trim().isEmpty) {
+                              addressController.text.trim().isEmpty ||
+                              contactNumberController.text.trim().isEmpty ||
+                              birthDateController.text.trim().isEmpty) {
                             _showErrorDialog(
                               "Please fill out all fields and upload required images.",
                             );
@@ -284,6 +315,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             firstname: firstNameController.text.trim(),
                             lastname: lastNameController.text.trim(),
                             address: addressController.text.trim(),
+                            contactNumber: contactNumberController.text.trim(),
+                            birthDate: birthDateController.text.trim(),
                             idImageFile: _idImage!,
                             profileImageFile: _profileImage!,
                           );
@@ -386,6 +419,44 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         style: const TextStyle(color: Colors.black),
         cursorColor: Colors.black,
+      ),
+    );
+  }
+
+  Widget _buildDateField(
+    TextEditingController controller,
+    String hint,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap, // This triggers the date picker
+      child: AbsorbPointer(
+        // AbsorbPointer prevents manual text input, and ensures the field is interacted with only by tapping.
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromARGB(255, 187, 161, 161),
+                blurRadius: 6,
+                offset: Offset(3, 3),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.only(top: 14),
+              prefixIcon: const Icon(Icons.calendar_today),
+              hintText: hint,
+            ),
+            style: const TextStyle(color: Colors.black),
+            cursorColor: Colors.black,
+            readOnly: true, // Make it read-only to prevent manual typing
+          ),
+        ),
       ),
     );
   }

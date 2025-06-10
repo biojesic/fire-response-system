@@ -1,11 +1,5 @@
 <x-layout>
 
-    {{-- <style>
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-    </style> --}}
-
     <body class="bg-gray-100 font-sans antialiased">
         <div class="flex min-h-screen w-full">
 
@@ -17,7 +11,7 @@
                 class="w-55 bg-gray-300 shadow-xl rounded-lg fixed left-3 top-22 bottom-5 p-6 overflow-y-auto no-scrollbar">
 
                 <div class="px-6 py-6 text-center border-b border-red-400">
-                    <img src="{{ asset('storage/user_images/HVnfUPUd7txYD9yrbf0rpEh2OwKlTaS0DgiMEPsR.jpg') }}"
+                    <img src="{{ asset('storage/user_images/KRgaIzD9VlqEHLr9rTUGZqbPQSd3usb4ct1OhQQ0.jpg') }}"
                         alt="Logo" class="rounded-full mb-4 mx-auto shadow-md">
                     <h2 class="text-xl font-semibold">Admin Panel</h2>
                 </div>
@@ -87,13 +81,13 @@
                                 </button>
                                 <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
                                     <li>
-                                        <a href="#"
+                                        <a href="{{ route('civilians.index') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
                                             🧍 Civilians
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#"
+                                        <a href="{{ route('barangay.index') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
                                             🏘️ Barangays
                                         </a>

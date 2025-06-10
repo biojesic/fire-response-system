@@ -1,7 +1,7 @@
 <x-layout>
     @section('title', 'Fire Emergency - BFP')
 
-    <div class="container w-270 pt-6 ml-20">
+    <div class="container w-240 pt-6 ml-20">
         <!-- Header Section -->
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>

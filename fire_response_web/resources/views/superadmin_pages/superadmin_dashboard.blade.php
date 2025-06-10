@@ -1,9 +1,6 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - BFP')
-    <div class="container w-270 pt-6 ml-20">
-        {{-- <main class="flex-1 p-6 pt-0">
-            <main class="flex-1 p-6 ml-10 "> --}}
-
+    <div class="container w-255 pt-6 ml-20">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Super Admin Dashboard</h1>
@@ -232,8 +229,6 @@
 
             </section>
         </div>
-        {{-- </main>
-        </main> --}}
     </div>
 </x-dashboard>
 

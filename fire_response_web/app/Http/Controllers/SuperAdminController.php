@@ -130,36 +130,5 @@ class SuperAdminController extends Controller
     return redirect()->route('superadmin.dashboard')->with('message', 'Selected teams dispatched to the incident successfully!');
 }
 
-    public function approveCivilian($userId)
-    {
-        $user = User::findOrFail($userId);
-
-        $user->update([
-            'userStatus' => 'Verified',
-            'rejection_reason' => null,
-            'reapply_allowed' => false,
-        ]);
-
-        return redirect()->back()->with('message', 'User verified successfully.');
-    }
-
-    public function rejectCivilian(Request $request, $userId)
-    {
-        $request->validate([
-            'rejection_reason' => 'required|string|max:255',
-        ]);
-
-        $user = User::findOrFail($userId);
-
-        $user->update([
-            'userStatus' => 'Rejected',
-            'rejection_reason' => $request->rejection_reason,
-            'reapply_allowed' => true,
-            'last_rejection_at' => now(),
-        ]);
-
-        return redirect()->back()->with('message', 'User rejected successfully.');
-    }
-
 
 }

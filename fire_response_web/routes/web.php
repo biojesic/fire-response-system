@@ -12,7 +12,9 @@ use App\Http\Controllers\SuperAdminFireReportsController;
 use App\Http\Controllers\TeamWebController;
 use App\Http\Controllers\FirefighterRankController;
 use App\Http\Controllers\RealTimeFireReportWebController;
-use App\Http\Controllers\BarangayController;
+use App\Http\Controllers\BarangayWebController;
+use App\Http\Controllers\CivilianWebController;
+use App\Http\Controllers\LGUWebController;
 
 Route::get('/', function () {
     return view('index');
@@ -72,6 +74,9 @@ Route::middleware('guest')->group(function () {
     })->name('login');
     
     Route::post('/login', [AuthWebController::class, 'login'])->name('login.submit');
+    // Route::get('/register-barangay', function () {
+    //     return view('auth_pages.register_brgy');
+    // })->name('register-brgy');
 });
 
 
@@ -91,14 +96,28 @@ Route::post('/dispatch/team/{teamId}', [AdminDashboardController::class, 'dispat
 Route::get('/superadmin/dashboard', [SuperAdminController::class, 'showSuperAdminDashboard'])->name('superadmin.dashboard');
 Route::post('superadmin/dispatch/team/{teamId}', [SuperAdminController::class, 'superAdmindispatchToIncident'])->name('superadmin.dispatch');
 Route::get('/superadmin/fire-reports', [SuperAdminFireReportsController::class, 'index'])->name('superadmin.fire_reports');
-Route::post('/users/{userId}/approve', [SuperAdminController::class, 'approveCivilian'])->name('users.approve');
-Route::post('/users/{userId}/reject', [SuperAdminController::class, 'rejectCivilian'])->name('users.reject');
 
+
+// CIVILIAN MANAGEMENT
+Route::get('/civilian', [CivilianWebController::class, 'index'])->name('civilians.index');
+Route::get('/civilian/{id}', [CivilianWebController::class, 'show'])->name('civilians.show');
+// Route::get('/civilian/verify{id}', [CivilianWebController::class, 'showCivilianDetails'])->name('civilians.show');
+Route::post('/civilian/{id}/status', [CivilianWebController::class, 'updateStatus'])->name('civilians.updateStatus');
+Route::get('/civilian-verification', [CivilianWebController::class, 'civilianVerificationPage'])->name('civilians.verificationpage');
+Route::post('/civilian/{userId}/approve', [CivilianWebController::class, 'approveCivilian'])->name('civilian.approve');
+Route::post('/civilian/{userId}/reject', [CivilianWebController::class, 'rejectCivilian'])->name('civilian.reject');
+Route::get('/civilian/user-verification/{id}', [CivilianWebController::class, 'showCivilianVerificationDetails'])->name('civilian.verification.show');
 
 
 // BARANGAY
-Route::get('/barangay/dashboard', [BarangayController::class, 'showBrgyDashboard'])
-    ->name('brgy.dashboard');  // No need for role middleware if we're manually checking user roles
+Route::get('/barangay/dashboard', [BarangayWebController::class, 'showBrgyDashboard'])
+    ->name('brgy.dashboard');
 
+Route::middleware('auth')->group(function () {
+    Route::resource('barangay', BarangayWebController::class);
+    Route::get('superadmin/barangay/verification', [BarangayWebController::class, 'barangayVerificationPage'])
+        ->name('barangay.verification');
+    });
 
-Route::resource('barangay', BarangayController::class);
+// LGU
+Route::resource('superadmin/lgu', LGUWebController::class);

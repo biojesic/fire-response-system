@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:fire_response_app/models/barangay.dart';
 import 'package:fire_response_app/models/brgy_fire_reports.dart';
 import 'package:fire_response_app/models/user.dart';

@@ -19,8 +19,8 @@ use Illuminate\Auth\Passwords\PasswordBroker;
 use App\Http\Controllers\RouteApiController;
 use App\Http\Controllers\RealTimeFireReportController;
 use App\Http\Controllers\BarangayFireAidController;
-// use App\Http\Controllers\UserController;
-
+use App\Http\Controllers\CivilianController;
+use App\Http\Controllers\LGUController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -105,10 +105,12 @@ Route::get('/barangay/{barangay_id}/fire-reports', [BarangayFireAidController::c
 // NOTIF
 Route::post('/send-notification', [NotificationsController::class, 'sendPushNotification'])->middleware('auth:sanctum');
 
+// CIVILIANS
+Route::get('/civilian/rejected', [CivilianController::class, 'getRejectedApplication']);
+Route::post('/civilian/reapply', [CivilianController::class, 'reapply']);
 
-
-
-
+// LGU
+Route::apiResource('lgus', LGUController::class);
 
 
 
@@ -120,9 +122,6 @@ Route::post('/send-notification', [NotificationsController::class, 'sendPushNoti
 
 //     return response()->json(['message' => 'Test email sent successfully!']);
 // });
-
-
-
 
 
 

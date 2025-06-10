@@ -1,6 +1,5 @@
 <x-layout>
     @section('title', 'Fire Emergency - Login')
-    {{-- <h1 class="title">Login</h1> --}}
 
     <style>
         html,

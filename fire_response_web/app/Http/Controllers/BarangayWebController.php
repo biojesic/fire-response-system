@@ -5,16 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Barangay;
 use Illuminate\Http\Request;
 use App\Models\FireReports;
+use App\Models\User;
+use App\Models\CityAndMunicipality;
 use Illuminate\Support\Facades\DB;
 
-class BarangayController extends Controller
+class BarangayWebController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $barangays = Barangay::where('brgy_status', 'active')
+        ->with(['fireStation', 'lgu'])->paginate(10);
+        return view('barangay_pages.index', compact('barangays'));
     }
 
     /**
@@ -22,37 +26,104 @@ class BarangayController extends Controller
      */
     public function create()
     {
-         $fireStations = FireStation::all(); // Get all fire stations
-        // return view('barangays.create', compact('fireStations')); // Pass fire stations to the view
+    $citiesAndMunicipalities = CityAndMunicipality::all();
+
+    return view('auth_pages.register_brgy', compact('citiesAndMunicipalities'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
+    public function store(Request $request){
         $validated = $request->validate([
         'barangay_name' => 'required|string|max:255',
-        'address' => 'required|string|max:255',
+        'barangay_hall_address' => 'required|string',
         'contact_number' => 'nullable|string|max:15',
-        'latitude' => 'nullable|numeric',
-        'longitude' => 'nullable|numeric',
-        'fire_station_id' => 'nullable|exists:fire_station,id',
-        'barangay_legitimacy_proof' => 'nullable|string|max:255',
+        'barangay_legitimacy_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:6500',
+        'lgu_id' => 'required|exists:cities_and_municipalities,id',
+        'userFirstName' => 'required|string|max:255',
+        'userLastName' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'id_image' => 'nullable|file|mimes:jpg,jpeg,png|max:6500',
         ]);
 
-        Barangay::create($validated);
+        // Handle image upload for barangay_proof
+        if ($request->hasFile('barangay_legitimacy_proof')) {
+            $barangayProofPath = $request->file('barangay_legitimacy_proof')->store('legitimacy_proof', 'public');
+        }
 
-        // return redirect()->route('barangays.index')->with('success', 'Barangay created successfully.');
+        // Handle image upload for ID image
+        if ($request->hasFile('id_image')) {
+            $idImagePath = $request->file('id_image')->store('user_images', 'public');
+        }
 
+        $address = $validated['barangay_hall_address'];
+        $geocodeData = $this->getCoordinatesByAddress($address);
+
+            if ($geocodeData['latitude'] === null || $geocodeData['longitude'] === null) {
+            return redirect()->back()->with('error', 'Unable to retrieve coordinates for the given address.');
+            }
+
+        $latitude = $geocodeData['latitude'];
+        $longitude = $geocodeData['longitude'];
+
+        // Fetch the selected City/Municipality and its Fire Station
+        $city = CityAndMunicipality::find($validated['lgu_id']);
+        $fireStation = $city->fireStation;
+
+        $barangay = Barangay::create([
+            'barangay_name' => $validated['barangay_name'],
+            'barangay_hall_address' => $validated['barangay_hall_address'],
+            'contact_number' => $validated['contact_number'],
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'fire_station_id' => $fireStation ? $fireStation->id : null,
+            'barangay_legitimacy_proof' => $barangayProofPath ?? null,
+            'brgy_status' => 'unverified',
+            'lgu_id' => $validated['lgu_id'],
+        ]);
+
+        $adminPassword = bcrypt('barangayadmin');
+
+        $adminUser = User::create([
+            'userFirstName' => $validated['userFirstName'],
+            'userLastName' => $validated['userLastName'],
+            'email' => $validated['email'],
+            'password' => $adminPassword, 
+            'id_image' => $idImagePath ?? null,
+            'userRole' => 'Barangay',
+            'userStatus' => 'Unverified',
+        ]);
+
+        return redirect()->route('home')->with('success', 'Barangay registered successfully!');
     }
 
-    /**
-     * Display the specified resource.
+        /**
+     * Function to get latitude and longitude based on the address
+     * 
+     * @param string $address
+     * @return array
      */
+    private function getCoordinatesByAddress($address)
+    {
+
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
+
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode($address) . "&key=" . $apiKey;
+
+        $response = file_get_contents($url);
+        $data = json_decode($response, true);
+
+        if ($data['status'] == 'OK') {
+            $latitude = $data['results'][0]['geometry']['location']['lat'];
+            $longitude = $data['results'][0]['geometry']['location']['lng'];
+            
+            return ['latitude' => $latitude, 'longitude' => $longitude];
+        }
+
+        return ['latitude' => null, 'longitude' => null];
+    }
+
     public function show(Barangay $barangay)
     {
-        // return view('barangays.show', compact('barangay')); // Display the barangay details
+
     }
 
     /**
@@ -60,8 +131,7 @@ class BarangayController extends Controller
      */
     public function edit(Barangay $barangay)
     {
-    //     $fireStations = FireStation::all(); // Get all fire stations
-    // return view('barangays.edit', compact('barangay', 'fireStations'));
+
     }
 
     /**
@@ -76,7 +146,7 @@ class BarangayController extends Controller
         'contact_number' => 'nullable|string|max:15',
         'latitude' => 'nullable|numeric',
         'longitude' => 'nullable|numeric',
-        'fire_station_id' => 'nullable|exists:fire_stations,id', // Ensure the fire station exists
+        'fire_station_id' => 'nullable|exists:fire_stations,id',
     ]);
 
     $barangay->update($validated);
@@ -145,8 +215,8 @@ class BarangayController extends Controller
                                       ->where('barangay_id', $barangayId)
                                       ->count() > 0 
                                       ? ($totalResponseTime / FireReports::whereNotNull('marked_as_contained_at')
-                                                                      ->where('barangay_id', $barangayId)
-                                                                      ->count()) 
+                                      ->where('barangay_id', $barangayId)
+                                      ->count()) 
                                       : 0;
 
         // Get the most recent reports
@@ -166,4 +236,11 @@ class BarangayController extends Controller
     ]);
     }
 
+    public function barangayVerificationPage() {
+        $unverifiedBarangays = Barangay::where('brgy_status', 'unverified')
+            ->get();
+        
+         return view('barangay_pages.barangay_verification_page', compact('unverifiedBarangays'));
+         
+    }
 }
