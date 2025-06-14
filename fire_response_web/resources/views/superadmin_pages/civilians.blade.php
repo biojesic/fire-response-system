@@ -1,6 +1,6 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - BFP')
-    <div class="container w-255 pt-6 ml-21">
+    <div class="container w-240 pt-6 ml-12">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Civilians</h1>
@@ -12,18 +12,26 @@
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..."
                 class="border rounded-lg p-2 w-full md:w-1/3">
 
-            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                Apply
-            </button>
+            <div class="w-full flex flex-wrap gap-4"> <!-- New container div -->
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Apply
+                </button>
 
-            <a href="" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
-                Reset
-            </a>
+                <a href="" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                    Reset
+                </a>
 
-            <a href="{{ route('civilians.verificationpage') }}"
-                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                For Verification
-            </a>
+                <a href="{{ route('civilians.verificationpage') }}"
+                    class="relative bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                    For Verification
+                    @if ($pendingCount > 0)
+                        <span
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ $pendingCount }}
+                        </span>
+                    @endif
+                </a>
+            </div>
         </form>
 
         <!-- Civilians Table -->
@@ -57,7 +65,7 @@
                             <a href="{{ route('civilians.show', $civilian->id) }}"
                                 class="text-blue-500 hover:text-blue-700">View</a> |
                             <a href="{{ route('civilians.updateStatus', $civilian->id) }}"
-                                class="text-green-500 hover:text-green-700">Update Status</a>
+                                class="text-green-500 hover:text-green-700">Update</a>
                         </td>
                     </tr>
                 @endforeach

@@ -1,5 +1,3 @@
-// import 'package:fire_response_app/provider/assigned_incident_provider.dart';
-// import 'package:fire_response_app/firebase.dart';
 import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_home.dart';
 import 'package:fire_response_app/provider/assigned_incident_provider.dart';
 import 'package:fire_response_app/provider/fire_aid_provider.dart';
@@ -9,20 +7,14 @@ import 'package:fire_response_app/provider/location_provider.dart';
 import 'package:fire_response_app/provider/submit_report_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-
 import 'package:fire_response_app/provider/auth_provider.dart';
 import 'package:fire_response_app/provider/fire_report_provider.dart';
 import 'package:fire_response_app/provider/fire_stations_provider.dart';
 import 'package:fire_response_app/provider/user_provider.dart';
 import 'package:fire_response_app/theme.dart';
-
 import 'package:fire_response_app/pages/auth%20pages/login.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_home.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/civilians_home.dart';
-// import 'package:flutter_timezone/flutter_timezone.dart' as tz;
-
-import 'firebase_options.dart';
 
 void main() async {
   // WidgetsFlutterBinding.ensureInitialized();

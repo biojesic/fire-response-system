@@ -1,8 +1,19 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - BFP')
-    <div class="container w-220 pt-6 ml-21">
+    <div class="container w-190 pt-6 ml-15">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">User Details</h1>
+            <div class="flex items-center gap-4">
+                <!-- Back Button -->
+                <a href="{{ url()->previous() }}" class="text-gray-600 hover:text-gray-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+
+                {{-- <h1 class="text-3xl font-bold text-gray-800">Barangay Details</h1> --}}
+            </div>
         </header>
 
         <div class="bg-white p-6 rounded-lg shadow-lg">

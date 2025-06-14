@@ -6,7 +6,9 @@ use App\Models\Barangay;
 use Illuminate\Http\Request;
 use App\Models\FireReports;
 use App\Models\User;
+use App\Models\FireStation;
 use App\Models\CityAndMunicipality;
+use App\Models\BarangayFireAid;
 use Illuminate\Support\Facades\DB;
 
 class BarangayWebController extends Controller
@@ -14,11 +16,35 @@ class BarangayWebController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $barangays = Barangay::where('brgy_status', 'active')
-        ->with(['fireStation', 'lgu'])->paginate(10);
-        return view('barangay_pages.index', compact('barangays'));
+        $query = Barangay::where('brgy_status', 'active')
+                    ->with(['fireStation', 'lgu']);
+       // 🔍 Search by barangay name
+        if ($request->filled('search')) {
+            $query->where('barangay_name', 'like', '%' . $request->search . '%');
+        }
+
+        // 🏙️ Filter by LGU (municipality/city)
+        if ($request->filled('lgu')) {
+            $query->where('lgu_id', $request->lgu);
+        }
+
+        // 🚒 Filter by fire station
+        if ($request->filled('fire_station')) {
+            $query->where('fire_station_id', $request->fire_station);
+        }
+
+        $barangays = $query->paginate(10);
+
+        // Get lists for dropdown filters
+        $lgus = CityAndMunicipality::orderBy('name')->get();
+        $fireStations = FireStation::orderBy('firestationName')->get();
+
+        // Count barangays waiting for verification
+        $pendingCount = Barangay::where('brgy_status', 'unverified')->count();
+
+        return view('barangay_pages.index', compact('barangays', 'lgus', 'fireStations', 'pendingCount'));
     }
 
     /**
@@ -92,6 +118,14 @@ class BarangayWebController extends Controller
             'userStatus' => 'Unverified',
         ]);
 
+        // Temporary storage
+        DB::table('barangay_pending_admins')->insert([
+            'barangay_id' => $barangay->id,
+            'user_id' => $adminUser->id,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
         return redirect()->route('home')->with('success', 'Barangay registered successfully!');
     }
 
@@ -121,9 +155,10 @@ class BarangayWebController extends Controller
         return ['latitude' => null, 'longitude' => null];
     }
 
-    public function show(Barangay $barangay)
-    {
-
+    public function show($id) {
+        $barangay = Barangay::with(['fireStation', 'lgu'])
+                ->findOrFail($id);
+        return view('barangay_pages.barangay_details', compact('barangay'));
     }
 
     /**
@@ -240,7 +275,90 @@ class BarangayWebController extends Controller
         $unverifiedBarangays = Barangay::where('brgy_status', 'unverified')
             ->get();
         
-         return view('barangay_pages.barangay_verification_page', compact('unverifiedBarangays'));
+         return view('barangay_pages.barangay_verification', compact('unverifiedBarangays'));
          
     }
+
+    public function showBarangayVerificationDetails($id) {
+        $barangay = Barangay::find($id);
+
+        if (!$barangay) {
+            return redirect()->route('barangays.index')->with('error', 'Details not found.');
+        }
+
+        return view('barangay_pages.barangay_verification_details', compact('barangay'));
+    }
+
+    public function approveBarangay($barangayId) {
+        // $barangay = Barangay::findOrFail($barangayId);
+
+        // $barangay->update([
+        //     'brgy_status' => 'active',
+        //     'rejection_reason' => null,
+        //     'approved_by' => auth()->id(),
+        //     'approved_at' => now(),
+        // ]);
+
+            DB::transaction(function () use ($barangayId) {
+            // 1. Approve barangay
+            Barangay::where('id', $barangayId)->update([
+                'brgy_status' => 'active',
+                'rejection_reason' => null,
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+            
+            // 2. Get pending admin
+            $pending = DB::table('barangay_pending_admins')
+                    ->where('barangay_id', $barangayId)
+                    ->firstOrFail();
+
+            $user = User::findOrFail($pending->user_id);
+        
+            // 3. Approve user and get the image path
+            $idImagePath = $user->id_image;
+            
+            User::where('id', $pending->user_id)->update([
+                'userStatus' => 'Active',
+                'rejection_reason' => null,
+                'reapply_allowed' => false,
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+                'id_image' => null,
+            ]);
+            
+            // 4. Create official record
+            BarangayFireAid::create([
+                'user_id' => $pending->user_id,
+                'barangay_id' => $barangayId,
+                'status' => "Standby",
+                'barangay_id_path' => $idImagePath,
+                'position' => "Admin"
+            ]);
+            
+            // 5. Cleanup
+            DB::table('barangay_pending_admins')->where('id', $pending->id)->delete();
+        });
+
+        return redirect()->route('barangay.verification')->with('success', 'Barangay account has been approved.');
+
+    }
+
+    public function rejectBarangay(Request $request, $barangayId) {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:255',
+        ]);
+
+        $barangay = Barangay::findOrFail($barangayId);
+
+        $barangay->update([
+            'userStatus' => 'Rejected',
+            'rejection_reason' => $request->rejection_reason,
+            'reapply_allowed' => true,
+            'last_rejection_at' => now(),
+        ]);
+
+        return redirect()->route('civilians.verificationpage')->with('message', 'Application Rejected.');
+    }
+
 }

@@ -1,6 +1,6 @@
 <x-dashboard>
     @section('title', 'Unverified Civilians - BFP')
-    <div class="container w-255 pt-6 ml-21">
+    <div class="container w-210 pt-6 ml-18">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Unverified Barangays</h1>
         </header>
@@ -20,13 +20,13 @@
                             <td class="px-4 py-2">{{ $barangay->barangay_name }}</td>
                             <td class="px-4 py-2">{{ $barangay->lgu->name }}</td>
                             <td class="px-4 py-2">
-                                <a href="" class="text-blue-500 hover:underline">View Full Details</a>
+                                <a href="{{ route('brgy.verification-details', $barangay->id) }}"
+                                    class="text-blue-500 hover:underline">View Full Details</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">No unverified civilians
-                                found.</td>
+                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">No unverified barangays.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:fire_response_app/provider/auth_provider.dart';
 import 'package:fire_response_app/provider/fire_aid_provider.dart';
 import 'package:flutter/material.dart';

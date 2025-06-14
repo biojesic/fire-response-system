@@ -1,16 +1,17 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - BFP')
-    <div class="container w-255 pt-6 ml-20">
+    <div class="container w-235 pt-6 ml-10">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Super Admin Dashboard</h1>
+                <h1 class="text-3xl font-bold text-gray-800">Fire Response Dashboard</h1>
                 <p class="text-sm text-gray-500">Welcome back, {{ $position->position_name }}
                     {{ $user->userFirstName }}!</p>
             </div>
         </header>
 
-        <!-- Parent Container for 3 Columns -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Parent Container for 2 Columns -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
             <!-- Left Column: Active Incidents -->
             <section>
                 <h3 class="text-xl font-semibold mb-4">Active Incidents</h3>
@@ -31,7 +32,7 @@
                         </li>
                         <li class="mr-1">
                             <button
-                                class="inline-block py-2 px-4 text-blue-500 font-semibold border-l border-t border-r rounded-t"
+                                class="inline-block py-2 px-4 text-blue-500 text-sm font-semibold border-l border-t border-r rounded-t"
                                 :class="{
                                     'bg-blue-500 text-white': activeTab === 'onResponse',
                                     'bg-white': activeTab !== 'onResponse'
@@ -153,7 +154,7 @@
             </section>
 
             <!-- Center Column: Standby Teams and New Reports -->
-            <div class="space-y-6">
+            {{-- <div class="space-y-6">
                 <!-- Standby Teams -->
                 <section>
                     <h3 class="text-xl font-semibold mb-4">Standby Teams</h3>
@@ -181,7 +182,7 @@
                 </section>
 
                 <!-- New Reports Notification -->
-                {{-- <section class="mt-6">
+                <section class="mt-6">
                     <h3 class="text-xl font-semibold mb-4">New Reports</h3>
                     @if ($newReports->isEmpty())
                         <p>No new reports in the last 24 hours.</p>
@@ -192,8 +193,8 @@
                             @endforeach
                         </ul>
                     @endif
-                </section> --}}
-            </div>
+                </section>
+            </div> --}}
 
             <!-- Right Column: Responding Firefighters (Map) -->
             <section>

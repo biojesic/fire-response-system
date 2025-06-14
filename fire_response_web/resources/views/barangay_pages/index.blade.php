@@ -1,30 +1,63 @@
 <x-dashboard>
     @section('title', 'Fire Emergency - BFP')
-    <div class="container w-255 pt-6 ml-21">
+    <div class="container w-240 pt-6 ml-12">
         <header class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Barangays</h1>
             </div>
         </header>
 
-        <!-- 🔍 Search and 🏷️ Filter -->
         <form method="GET" class="flex flex-wrap gap-4 mb-6">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..."
+            <!-- 🔍 Search -->
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by barangay name..."
                 class="border rounded-lg p-2 w-full md:w-1/3">
 
-            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                Apply
-            </button>
+            <!-- 🏙️ City / Municipality Filter -->
+            <select name="lgu" class="border rounded-lg p-2 w-full md:w-1/4">
+                <option value="">All Cities/Municipalities</option>
+                @foreach ($lgus as $lgu)
+                    <option value="{{ $lgu->id }}" {{ request('lgu') == $lgu->id ? 'selected' : '' }}>
+                        {{ $lgu->name }}
+                    </option>
+                @endforeach
+            </select>
 
-            <a href="" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
-                Reset
-            </a>
+            <!-- 🚒 Fire Station Filter -->
+            <select name="fire_station" class="border rounded-lg p-2 w-full md:w-1/4">
+                <option value="">All Fire Stations</option>
+                @foreach ($fireStations as $station)
+                    <option value="{{ $station->id }}" {{ request('fire_station') == $station->id ? 'selected' : '' }}>
+                        {{ $station->firestationName }}
+                    </option>
+                @endforeach
+            </select>
 
-            <a href="{{ route('barangay.verification') }}"
-                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                For Verification
-            </a>
+            <!-- Second Line Starts Here -->
+            <div class="w-full flex flex-wrap gap-4"> <!-- New container div -->
+                <!-- ✅ Apply Filters -->
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Apply
+                </button>
+
+                <!-- 🔄 Reset Filters -->
+                <a href="{{ route('barangay.index') }}"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                    Reset
+                </a>
+
+                <a href="{{ route('barangay.verification') }}"
+                    class="relative bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                    For Verification
+                    @if ($pendingCount > 0)
+                        <span
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ $pendingCount }}
+                        </span>
+                    @endif
+                </a>
+            </div>
         </form>
+
 
         <!-- Barangays Table -->
         <table class="min-w-full bg-white border border-gray-300">
@@ -53,8 +86,9 @@
 
                         </td>
                         <td class="py-3 px-6 text-sm text-gray-700">
-                            <a href="" class="text-blue-500 hover:text-blue-700">View</a> |
-                            <a href="" class="text-green-500 hover:text-green-700">Update Status</a>
+                            <a href="{{ route('barangay.show', $barangay->id) }}"
+                                class="text-blue-500 hover:text-blue-700">View</a> |
+                            <a href="" class="text-green-500 hover:text-green-700">Update</a>
                         </td>
                     </tr>
                 @endforeach

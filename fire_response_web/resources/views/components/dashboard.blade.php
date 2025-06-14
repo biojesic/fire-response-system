@@ -8,37 +8,37 @@
             @endphp
 
             <aside
-                class="w-55 bg-gray-300 shadow-xl rounded-lg fixed left-3 top-22 bottom-5 p-6 overflow-y-auto no-scrollbar">
+                class="w-45 bg-gray-300 shadow-xl rounded-lg fixed left-3 top-22 bottom-5 p-3 overflow-y-auto no-scrollbar">
 
                 <div class="px-6 py-6 text-center border-b border-red-400">
-                    <img src="{{ asset('storage/user_images/KRgaIzD9VlqEHLr9rTUGZqbPQSd3usb4ct1OhQQ0.jpg') }}"
-                        alt="Logo" class="rounded-full mb-4 mx-auto shadow-md">
-                    <h2 class="text-xl font-semibold">Admin Panel</h2>
+                    {{-- <img src="{{ asset('storage/user_images/KRgaIzD9VlqEHLr9rTUGZqbPQSd3usb4ct1OhQQ0.jpg') }}"
+                        alt="Logo" class="rounded-full mb-4 mx-auto shadow-md"> --}}
+                    <h2 class="text-md font-semibold">Admin Panel</h2>
                 </div>
 
                 @if ($position === 'Provincial Director' || $position === 'Super Admin')
-                    <nav class="mt-6 text-sm w-full">
+                    <nav class="text-sm w-full">
                         <ul class="space-y-1">
 
-                            <li class="pl-4">
+                            <li class="text-center">
                                 <a href="{{ route('superadmin.dashboard') }}"
-                                    class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                    🚨 Fire Response
+                                    class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition font-bold text-gray-700 px-2 mt-4 ">
+                                    Fire Response
                                 </a>
                             </li>
-                            <li class="pl-4">
+                            <li class="text-center">
                                 <a href="#"
-                                    class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                    🏠 Dashboard
+                                    class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition font-bold text-gray-700">
+                                    Dashboard
                                 </a>
                             </li>
 
                             {{-- RESOURCES --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                            <li x-data="{ open: false }" class="font-bold text-gray-700 mt-2">
                                 <button @click="open = !open"
                                     class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
                                     <span class="flex items-center gap-2">
-                                        📦 Resources
+                                        Resources
                                     </span>
                                     <span x-text="open ? '▲' : '▼'"></span>
                                 </button>
@@ -46,36 +46,36 @@
                                     <li>
                                         <a href="#"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            🏢 Fire Stations
+                                            Fire Stations
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('admin.firefighters') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            👨‍🚒 Firefighters
+                                            Firefighters
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('admin.teams') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            👥 Teams
+                                            Teams
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('admin.equipment.list') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            🧰 Equipment
+                                            Equipment
                                         </a>
                                     </li>
                                 </ul>
                             </li>
 
                             {{-- USER MANAGEMENT --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                            <li x-data="{ open: false }" class="font-bold text-gray-700">
                                 <button @click="open = !open"
                                     class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
                                     <span class="flex items-center gap-2">
-                                        👥 User Management
+                                        User Management
                                     </span>
                                     <span x-text="open ? '▲' : '▼'"></span>
                                 </button>
@@ -83,13 +83,13 @@
                                     <li>
                                         <a href="{{ route('civilians.index') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            🧍 Civilians
+                                            Civilians
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('barangay.index') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            🏘️ Barangays
+                                            Barangays
                                         </a>
                                     </li>
                                 </ul>
@@ -97,11 +97,11 @@
 
 
                             {{-- REPORTS & INSIGHTS --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                            <li x-data="{ open: false }" class="font-bold text-gray-700">
                                 <button @click="open = !open"
                                     class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
                                     <span class="flex items-center gap-2">
-                                        📋 Reports & Insights
+                                        Reports & Insights
                                     </span>
                                     <span x-text="open ? '▲' : '▼'"></span>
                                 </button>
@@ -109,24 +109,24 @@
                                     <li>
                                         <a href="{{ route('superadmin.fire_reports') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            📋 Fire Reports
+                                            Fire Reports
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('admin.reports') }}"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            📊 Analytics
+                                            Analytics
                                         </a>
                                     </li>
                                 </ul>
                             </li>
 
                             {{-- SETTINGS --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700 px-2 mt-4">
+                            <li x-data="{ open: false }" class="font-bold text-gray-700">
                                 <button @click="open = !open"
                                     class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
                                     <span class="flex items-center gap-2">
-                                        ⚙️ Settings
+                                        Settings
                                     </span>
                                     <span x-text="open ? '▲' : '▼'"></span>
                                 </button>
@@ -134,7 +134,7 @@
                                     <li>
                                         <a href="#"
                                             class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            ⚙️ System Settings
+                                            System Settings
                                         </a>
                                     </li>
                                     <li>
@@ -143,7 +143,7 @@
                                             <button type="button"
                                                 class="flex items-center gap-2 py-2 px-2 rounded w-full hover:bg-red-800 hover:text-white transition"
                                                 onclick="return confirmLogout(event)">
-                                                🚪 Logout
+                                                Logout
                                             </button>
                                         </form>
                                     </li>

@@ -36,7 +36,10 @@ class User extends Authenticatable
         'reapplication_count',
         'id_image',
         'profile_image',
-        'last_rejection_at'
+        'last_rejection_at',
+        'approved_by',
+        'rejected_by',
+        'approved_at',
     ];
 
     /**
@@ -99,6 +102,14 @@ class User extends Authenticatable
         }
 
         return now()->diffInDays($this->last_rejection_at) >= 7;
+    }
+
+    public function approver() {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejector() {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 
 }

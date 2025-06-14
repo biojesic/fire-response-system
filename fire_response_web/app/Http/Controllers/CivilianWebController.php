@@ -9,7 +9,12 @@ class CivilianWebController extends Controller
 {
    public function index() {
         $civilians = User::where('userRole', 'civilian')->paginate(10);
-        return view('superadmin_pages.civilians', compact('civilians'));
+
+        $pendingCount = User::where('userRole', 'civilian')
+            ->where('userStatus', 'Unverified')
+            ->count();
+
+        return view('superadmin_pages.civilians', compact('civilians', 'pendingCount'));
     }
 
     public function show($id) {
@@ -50,6 +55,8 @@ class CivilianWebController extends Controller
             'userStatus' => 'Active',
             'rejection_reason' => null,
             'reapply_allowed' => false,
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
         ]);
 
         return redirect()->route('civilians.verificationpage')->with('message', 'User verified successfully.');
@@ -67,6 +74,7 @@ class CivilianWebController extends Controller
             'rejection_reason' => $request->rejection_reason,
             'reapply_allowed' => true,
             'last_rejection_at' => now(),
+            'rejected_by' => auth()->id(),
         ]);
 
         return redirect()->route('civilians.verificationpage')->with('message', 'Application Rejected.');

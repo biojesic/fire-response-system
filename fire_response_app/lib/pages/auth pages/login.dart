@@ -3,7 +3,6 @@ import 'package:fire_response_app/pages/auth%20pages/reapply_email.dart';
 import 'package:fire_response_app/pages/auth%20pages/register.dart';
 import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_home.dart';
 import 'package:fire_response_app/pages/brgy_fire_aid_pages/fire_aid_register.dart';
-import 'package:fire_response_app/pages/emergency_page/emergency_report.dart';
 import 'package:fire_response_app/pages/firefighters%20pages/firefighters_home.dart';
 import 'package:fire_response_app/pages/public%20users%20pages/civilians_home.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -31,8 +30,6 @@ class _LoginPageState extends State<LoginPage> {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
-      // You can show an alert or update the UI here for the notification
-      // Example: Show an alert dialog
       showDialog(
         context: context,
         builder:

@@ -110,14 +110,27 @@ Route::get('/civilian/user-verification/{id}', [CivilianWebController::class, 's
 
 
 // BARANGAY
-Route::get('/barangay/dashboard', [BarangayWebController::class, 'showBrgyDashboard'])
-    ->name('brgy.dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::resource('barangay', BarangayWebController::class);
-    Route::get('superadmin/barangay/verification', [BarangayWebController::class, 'barangayVerificationPage'])
-        ->name('barangay.verification');
+Route::controller(BarangayWebController::class)->group(function () {
+        Route::get('barangay/create', 'create')->name('barangay.create');
+        Route::post('barangay', 'store')->name('barangay.store');
     });
+    
+    
+    Route::middleware('auth')->group(function () {
+        Route::resource('barangay', BarangayWebController::class)
+        ->except(['create', 'store']);
+        Route::get('admin/barangay/verification', [BarangayWebController::class, 'barangayVerificationPage'])
+        ->name('barangay.verification');
+        Route::get('/barangay/dashboard', [BarangayWebController::class, 'showBrgyDashboard'])
+        ->name('brgy.dashboard');
+        Route::get('/barangay/verification-details/{id}', [BarangayWebController::class, 'showBarangayVerificationDetails'])
+        ->name('brgy.verification-details');
+        Route::post('/barangay/{barangayId}/approve', [BarangayWebController::class, 'approveBarangay'])->name('barangay.approve');
+        Route::post('/barangay/{barangayId}/reject', [BarangayWebController::class, 'rejectBarangay'])->name('barangay.reject');
+
+    });
+
+
 
 // LGU
 Route::resource('superadmin/lgu', LGUWebController::class);
