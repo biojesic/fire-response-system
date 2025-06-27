@@ -36,6 +36,43 @@ class Barangay extends Model
     {
         return $this->belongsTo(CityAndMunicipality::class);
     }
+
+    public function isRejected(): bool
+    {
+        return $this->brgy_status === 'rejected';
+    }
+
+    public function canReapply(): bool
+    {
+        if (!$this->reapply_allowed || $this->brgy_status !== 'rejected') {
+            return false;
+        }
+
+        if (!$this->rejected_at) {
+            return false;
+        }
+
+        return now()->diffInDays($this->rejected_at) >= 3;
+    }
+
+    public function approver() {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejector() {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function adminUser() {
+        return $this->hasOneThrough(
+            User::class,
+            BarangayPendingAdmin::class,
+            'barangay_id',
+            'id',
+            'id',
+            'user_id'
+        );
+    }
 }
 
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\RealTimeFireReportWebController;
 use App\Http\Controllers\BarangayWebController;
 use App\Http\Controllers\CivilianWebController;
 use App\Http\Controllers\LGUWebController;
+use App\Http\Controllers\MailController;
 
 Route::get('/', function () {
     return view('index');
@@ -127,10 +128,26 @@ Route::controller(BarangayWebController::class)->group(function () {
         ->name('brgy.verification-details');
         Route::post('/barangay/{barangayId}/approve', [BarangayWebController::class, 'approveBarangay'])->name('barangay.approve');
         Route::post('/barangay/{barangayId}/reject', [BarangayWebController::class, 'rejectBarangay'])->name('barangay.reject');
-
     });
+
+    Route::post('/barangay/reapply', [BarangayWebController::class, 'reapply'])
+     ->name('barangay.reapply');
 
 
 
 // LGU
 Route::resource('superadmin/lgu', LGUWebController::class);
+
+
+// Route::get('send-email', [MailController::class, 'index'])
+//      ->name('send.email');
+
+
+Route::get('/test-email', function() {
+    Mail::to('test@example.com')->send(new \App\Mail\BarangayRejectionEmail(
+        'Sample Barangay',
+        'Test rejection reason',
+        true
+    ));
+    return 'Email sent (check storage/logs/laravel.log)';
+});

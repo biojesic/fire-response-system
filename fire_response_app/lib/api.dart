@@ -9,3 +9,5 @@ class API {
 //  192.168.7.61 -> ip hotspot sa selpon ko
 // 192.168.1.156 - wifi ni dione
 // https://slategrey-kudu-458455.hostingersite.com
+
+// php -S 127.0.0.1:8085 -t public

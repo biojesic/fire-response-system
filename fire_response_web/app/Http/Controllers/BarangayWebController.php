@@ -10,6 +10,9 @@ use App\Models\FireStation;
 use App\Models\CityAndMunicipality;
 use App\Models\BarangayFireAid;
 use Illuminate\Support\Facades\DB;
+use App\Mail\BarangayRejectionEmail;
+use Mail;
+use Illuminate\Support\Facades\Log;
 
 class BarangayWebController extends Controller
 {
@@ -286,24 +289,26 @@ class BarangayWebController extends Controller
             return redirect()->route('barangays.index')->with('error', 'Details not found.');
         }
 
-        return view('barangay_pages.barangay_verification_details', compact('barangay'));
+        $adminUser = DB::table('barangay_pending_admins')
+                ->join('users', 'barangay_pending_admins.user_id', '=', 'users.id')
+                ->where('barangay_pending_admins.barangay_id', $id)
+                ->select('users.*')
+                ->first();
+
+        return view('barangay_pages.barangay_verification_details', [
+        'barangay' => $barangay,
+        'adminUser' => $adminUser
+    ]);
     }
 
     public function approveBarangay($barangayId) {
-        // $barangay = Barangay::findOrFail($barangayId);
-
-        // $barangay->update([
-        //     'brgy_status' => 'active',
-        //     'rejection_reason' => null,
-        //     'approved_by' => auth()->id(),
-        //     'approved_at' => now(),
-        // ]);
-
+        
             DB::transaction(function () use ($barangayId) {
             // 1. Approve barangay
             Barangay::where('id', $barangayId)->update([
                 'brgy_status' => 'active',
                 'rejection_reason' => null,
+                'rejected_by' => null,
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),
             ]);
@@ -345,20 +350,82 @@ class BarangayWebController extends Controller
     }
 
     public function rejectBarangay(Request $request, $barangayId) {
-        $request->validate([
+        $validated = $request->validate([
             'rejection_reason' => 'required|string|max:255',
         ]);
 
-        $barangay = Barangay::findOrFail($barangayId);
+        try {
+            DB::transaction(function () use ($barangayId, $validated) {
+                // 1. Get barangay record
+                $barangay = Barangay::lockForUpdate()->findOrFail($barangayId);
 
-        $barangay->update([
-            'userStatus' => 'Rejected',
-            'rejection_reason' => $request->rejection_reason,
-            'reapply_allowed' => true,
-            'last_rejection_at' => now(),
-        ]);
+                // 2. Update barangay status
+                $barangay->update([
+                    'brgy_status' => 'rejected',
+                    'rejection_reason' => $validated['rejection_reason'],
+                    'rejected_by' => auth()->id(),
+                    'rejected_at' => now(),
+                    'reapply_allowed' => true,
+                ]);
 
-        return redirect()->route('civilians.verificationpage')->with('message', 'Application Rejected.');
+                // 3. Find and update associated admin user
+                $pending = DB::table('barangay_pending_admins')
+                        ->where('barangay_id', $barangayId)
+                        ->first();
+
+                if ($pending) {
+                    User::where('id', $pending->user_id)->update([
+                        'userStatus' => 'Rejected',
+                        'rejection_reason' => 'Barangay application rejected.',
+                        'last_rejection_at' => now(),
+                        'rejected_by' => auth()->id(),
+                        'reapply_allowed' => true,
+                    ]);
+
+                    $user = User::find($pending->user_id);
+                    $canReapply = $barangay->reapply_allowed;
+
+                    // Send email notification
+                    Mail::to($user->email)->send(new BarangayRejectionEmail(
+                        $barangay->barangay_name,
+                        $validated['rejection_reason'],
+                        $canReapply
+                    ));
+                }
+            });
+
+            return redirect()->route('barangay.verification')
+                ->with('warning', 'Barangay application has been rejected');
+
+        } catch (\Exception $e) {
+            Log::error("Barangay rejection failed: ".$e->getMessage());
+            return back()->with('error', 'Failed to reject application');
+        }
     }
 
+    public function reapply(Request $request)
+{
+    $user = auth()->user();
+    
+    // Hanapin ang rejected barangay
+    $barangay = Barangay::whereHas('pendingAdmin', function($q) use ($user) {
+        $q->where('user_id', $user->id);
+    })->where('brgy_status', 'rejected')->firstOrFail();
+
+    if (!$barangay->reapply_allowed) {
+        return back()->with('error', 'You are not allowed to reapply');
+    }
+
+    // I-update ang status
+    $barangay->update([
+        'brgy_status' => 'pending',
+        'rejection_reason' => null,
+        'reapplication_count' => $barangay->reapplication_count + 1
+    ]);
+
+    // Padalhan ng confirmation email
+    $user->notify(new BarangayReappliedNotification());
+
+    return back()->with('success', 'Reapplication submitted for review');
+}
 }

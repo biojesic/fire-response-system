@@ -13,11 +13,15 @@ use App\Models\RealTimeFireReport;
 use App\Models\FireFighterReports;
 use App\Controllers\FireReportsController;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 class SuperAdminController extends Controller
 {
     public function showSuperAdminDashboard()
     {
+
+        
+
         $user = auth()->user();
 
         if (!$user) {
