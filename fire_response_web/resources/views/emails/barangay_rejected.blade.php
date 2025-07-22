@@ -1,21 +1,18 @@
 @component('mail::message')
-    # Barangay Application Rejected
+    # ❌ Barangay Application Rejected
 
-    Dear Barangay Administrator,
+    Your application for **{{ $barangayName }}** was rejected.
 
-    Your application for **{{ $barangayName }}** has been reviewed and rejected.
-
-    **Reason for Rejection:**
+    **Reason:**
     {{ $rejectionReason }}
 
-    @if ($canReapply)
-        👉 [Click here to reapply]({{ route('barangay.reapply') }}?token={{ $reapplyToken }})
-    @else
-        This decision is final and cannot be appealed.
+    @if ($reapplyUrl)
+        @component('mail::button', ['url' => $reapplyUrl, 'color' => 'red'])
+            Reapply Now
+        @endcomponent
+        <small>Link expires in 7 days</small>
     @endif
 
-    For questions, please contact BFP Support.
-
     Regards,
-    Bureau of Fire Protection
+    BFP System
 @endcomponent

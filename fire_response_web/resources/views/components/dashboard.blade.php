@@ -16,143 +16,149 @@
                     <h2 class="text-md font-semibold">Admin Panel</h2>
                 </div>
 
-                @if ($position === 'Provincial Director' || $position === 'Super Admin')
-                    <nav class="text-sm w-full">
-                        <ul class="space-y-1">
-
+                {{-- @if ($position === 'Provincial Director' || $position === 'Super Admin') --}}
+                <nav class="text-sm w-full">
+                    <ul class="space-y-1">
+                        {{-- FIRE RESPONSE TAB --}}
+                        @if (in_array($position, ['Provincial Director', 'Radio Operator']))
                             <li class="text-center">
-                                <a href="{{ route('superadmin.dashboard') }}"
+                                <a href="{{ route('superadmin.fire.response') }}"
                                     class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition font-bold text-gray-700 px-2 mt-4 ">
                                     Fire Response
                                 </a>
                             </li>
+                        @endif
+
+                        {{-- DASHBOARD TAB --}}
+                        @if (in_array($position, ['Provincial Director', 'Super Admin', 'Admin']))
                             <li class="text-center">
-                                <a href="#"
+                                <a href="{{ route('superadmin.dashboard') }}"
                                     class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition font-bold text-gray-700">
                                     Dashboard
                                 </a>
                             </li>
+                        @endif
 
-                            {{-- RESOURCES --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700 mt-2">
-                                <button @click="open = !open"
-                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                    <span class="flex items-center gap-2">
-                                        Resources
-                                    </span>
-                                    <span x-text="open ? '▲' : '▼'"></span>
-                                </button>
-                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
-                                    <li>
-                                        <a href="#"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Fire Stations
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('admin.firefighters') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Firefighters
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('admin.teams') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Teams
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('admin.equipment.list') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Equipment
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
+                        {{-- RESOURCES --}}
+                        <li x-data="{ open: false }" class="font-bold text-gray-700 mt-2">
+                            <button @click="open = !open"
+                                class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                <span class="flex items-center gap-2">
+                                    Resources
+                                </span>
+                                <span x-text="open ? '▲' : '▼'"></span>
+                            </button>
+                            <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                <li>
+                                    <a href="#"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Fire Stations
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.firefighters') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Firefighters
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.teams') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Teams
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.equipment.list') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Equipment
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                            {{-- USER MANAGEMENT --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700">
-                                <button @click="open = !open"
-                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                    <span class="flex items-center gap-2">
-                                        User Management
-                                    </span>
-                                    <span x-text="open ? '▲' : '▼'"></span>
-                                </button>
-                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
-                                    <li>
-                                        <a href="{{ route('civilians.index') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Civilians
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('barangay.index') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Barangays
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
+                        {{-- USER MANAGEMENT --}}
+                        <li x-data="{ open: false }" class="font-bold text-gray-700">
+                            <button @click="open = !open"
+                                class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                <span class="flex items-center gap-2">
+                                    User Management
+                                </span>
+                                <span x-text="open ? '▲' : '▼'"></span>
+                            </button>
+                            <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                <li>
+                                    <a href="{{ route('civilians.index') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Civilians
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('barangay.index') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Barangays
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
 
-                            {{-- REPORTS & INSIGHTS --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700">
-                                <button @click="open = !open"
-                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                    <span class="flex items-center gap-2">
-                                        Reports & Insights
-                                    </span>
-                                    <span x-text="open ? '▲' : '▼'"></span>
-                                </button>
-                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
-                                    <li>
-                                        <a href="{{ route('superadmin.fire_reports') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Fire Reports
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('admin.reports') }}"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            Analytics
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
+                        {{-- REPORTS & INSIGHTS --}}
+                        <li x-data="{ open: false }" class="font-bold text-gray-700">
+                            <button @click="open = !open"
+                                class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                <span class="flex items-center gap-2">
+                                    Reports & Insights
+                                </span>
+                                <span x-text="open ? '▲' : '▼'"></span>
+                            </button>
+                            <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                <li>
+                                    <a href="{{ route('superadmin.fire_reports') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Fire Reports
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.reports') }}"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        Analytics
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                            {{-- SETTINGS --}}
-                            <li x-data="{ open: false }" class="font-bold text-gray-700">
-                                <button @click="open = !open"
-                                    class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                    <span class="flex items-center gap-2">
-                                        Settings
-                                    </span>
-                                    <span x-text="open ? '▲' : '▼'"></span>
-                                </button>
-                                <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
-                                    <li>
-                                        <a href="#"
-                                            class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
-                                            System Settings
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <form action="{{ route('logout') }}" method="POST" id="logoutForm">
-                                            @csrf
-                                            <button type="button"
-                                                class="flex items-center gap-2 py-2 px-2 rounded w-full hover:bg-red-800 hover:text-white transition"
-                                                onclick="return confirmLogout(event)">
-                                                Logout
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
+                        {{-- SETTINGS --}}
+                        <li x-data="{ open: false }" class="font-bold text-gray-700">
+                            <button @click="open = !open"
+                                class="w-full text-left flex items-center justify-between py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                <span class="flex items-center gap-2">
+                                    Settings
+                                </span>
+                                <span x-text="open ? '▲' : '▼'"></span>
+                            </button>
+                            <ul x-show="open" x-transition.duration.200ms class="pl-4 space-y-1 mt-2">
+                                <li>
+                                    <a href="#"
+                                        class="flex items-center gap-2 py-2 px-2 rounded hover:bg-red-800 hover:text-white transition">
+                                        System Settings
+                                    </a>
+                                </li>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST" id="logoutForm">
+                                        @csrf
+                                        <button type="button"
+                                            class="flex items-center gap-2 py-2 px-2 rounded w-full hover:bg-red-800 hover:text-white transition"
+                                            onclick="return confirmLogout(event)">
+                                            Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
 
-                        </ul>
-                    </nav>
-                @endif
+                    </ul>
+                </nav>
+                {{-- @endif --}}
             </aside>
 
             <section>

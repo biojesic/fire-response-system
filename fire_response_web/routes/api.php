@@ -113,6 +113,29 @@ Route::post('/civilian/reapply', [CivilianController::class, 'reapply']);
 Route::apiResource('lgus', LGUController::class);
 
 
+// Route::middleware(['web'])->group(function () {
+//     Route::get('/incidents', function(Request $request) {
+//         $days = $request->query('days', 30);
+        
+//         return response()->json(
+//             App\Models\FireReport::with('barangay')
+//                 ->where('created_at', '>=', now()->subDays($days))
+//                 ->whereNotNull('latitude')
+//                 ->whereNotNull('longitude')
+//                 ->select(['id', 'latitude', 'longitude', 'created_at', 'barangay_id'])
+//                 ->get()
+//                 ->map(function($item) {
+//                     return [
+//                         'id' => $item->id,
+//                         'latitude' => (float)$item->latitude,
+//                         'longitude' => (float)$item->longitude,
+//                         'created_at' => $item->created_at,
+//                         'barangay' => $item->barangay ? ['name' => $item->barangay->name] : null
+//                     ];
+//                 })
+//         )->header('Content-Type', 'application/json');
+//     });
+// });
 
 // Route::post('/test-email', function(Request $request) {
 //     Mail::raw('This is a test email from Laravel using Mailtrap.', function ($message) use ($request) {

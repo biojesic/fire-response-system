@@ -27,6 +27,8 @@ class FireReports extends Model
         'marked_as_false_alarm_at',
         'false_alarm_image',
         'fire_report_image', 
+        'responders_arrived_at',
+        'response_time'
 
     ];
 

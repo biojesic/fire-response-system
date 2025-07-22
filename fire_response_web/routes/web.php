@@ -94,9 +94,11 @@ Route::post('/dispatch/team/{teamId}', [AdminDashboardController::class, 'dispat
 // Route::post('/dispatch/incident/{incidentId}', [AdminDashboardController::class, 'assignTeamToIncident'])->name('admin.dispatch.incident');
 
 // SUPER ADMIN
-Route::get('/superadmin/dashboard', [SuperAdminController::class, 'showSuperAdminDashboard'])->name('superadmin.dashboard');
+Route::get('/superadmin/fireresponse', [SuperAdminController::class, 'fireResponseDashboard'])->name('superadmin.fire.response');
 Route::post('superadmin/dispatch/team/{teamId}', [SuperAdminController::class, 'superAdmindispatchToIncident'])->name('superadmin.dispatch');
 Route::get('/superadmin/fire-reports', [SuperAdminFireReportsController::class, 'index'])->name('superadmin.fire_reports');
+Route::get('/superadmin/dashboard', [SuperAdminController::class, 'dashboard'])
+->middleware('auth')->name('superadmin.dashboard');
 
 
 // CIVILIAN MANAGEMENT
@@ -111,18 +113,15 @@ Route::get('/civilian/user-verification/{id}', [CivilianWebController::class, 's
 
 
 // BARANGAY
-Route::controller(BarangayWebController::class)->group(function () {
-        Route::get('barangay/create', 'create')->name('barangay.create');
-        Route::post('barangay', 'store')->name('barangay.store');
-    });
-    
+Route::get('/barangay/register', [BarangayWebController::class, 'registerView'])->name('barangay.registerView');
+Route::post('/barangay/register', [BarangayWebController::class, 'register'])->name('barangay.register');
     
     Route::middleware('auth')->group(function () {
-        Route::resource('barangay', BarangayWebController::class)
-        ->except(['create', 'store']);
+        Route::get('admin/barangay/', [BarangayWebController::class, 'index'])
+        ->name('barangay.index');
         Route::get('admin/barangay/verification', [BarangayWebController::class, 'barangayVerificationPage'])
         ->name('barangay.verification');
-        Route::get('/barangay/dashboard', [BarangayWebController::class, 'showBrgyDashboard'])
+        Route::get('/brgy/dashboard', [BarangayWebController::class, 'showBrgyDashboard'])
         ->name('brgy.dashboard');
         Route::get('/barangay/verification-details/{id}', [BarangayWebController::class, 'showBarangayVerificationDetails'])
         ->name('brgy.verification-details');
@@ -132,7 +131,6 @@ Route::controller(BarangayWebController::class)->group(function () {
 
     Route::post('/barangay/reapply', [BarangayWebController::class, 'reapply'])
      ->name('barangay.reapply');
-
 
 
 // LGU

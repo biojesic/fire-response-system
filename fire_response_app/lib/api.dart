@@ -11,3 +11,4 @@ class API {
 // https://slategrey-kudu-458455.hostingersite.com
 
 // php -S 127.0.0.1:8085 -t public
+// php -S 192.168.18.33:8000 -t public

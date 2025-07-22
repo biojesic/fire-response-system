@@ -39,7 +39,7 @@
 
         <div class="card">
             <h3 class ="mb-4">Barangay Details</h3>
-            <form action="{{ route('barangay.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6"
+            <form action="{{ route('barangay.register') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6"
                 enctype="multipart/form-data">
                 @csrf
 

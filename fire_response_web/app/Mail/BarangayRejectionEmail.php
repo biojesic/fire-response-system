@@ -20,12 +20,18 @@ class BarangayRejectionEmail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($barangayName, $rejectionReason, $canReapply)
-    {
+    public function __construct(
+        $barangayName, 
+        $rejectionReason, 
+        $canReapply,
+        $token // New parameter
+    ) {
         $this->barangayName = $barangayName;
         $this->rejectionReason = $rejectionReason;
         $this->canReapply = $canReapply;
+        $this->token = $token; // Store token
     }
+
 
     /**
      * Get the message envelope.
@@ -40,17 +46,19 @@ class BarangayRejectionEmail extends Mailable
     /**
      * Get the message content definition.
      */
-    public function content(): Content {
+    public function content(): Content
+    {
         return new Content(
             markdown: 'emails.barangay_rejected',
             with: [
                 'barangayName' => $this->barangayName,
                 'rejectionReason' => $this->rejectionReason,
-                'canReapply' => $this->canReapply,
+                'reapplyUrl' => $this->canReapply 
+                    ? route('barangay.reapply', ['token' => $this->token])
+                    : null
             ],
         );
     }
-
     /**
      * Get the attachments for the message.
      *

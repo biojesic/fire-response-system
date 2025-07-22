@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('reapplication_tokens', function (Blueprint $table) {
             $table->id();
             $table->string('token', 64)->unique();
-
-            $table->unsignedBigInteger('applicable_id');
-            $table->string('applicable_type');
-            
+            $table->foreignId('user_id')->constrained();
+            $table->string('user_role');
             $table->text('rejection_reason');
             $table->timestamp('expires_at');
             $table->timestamps();

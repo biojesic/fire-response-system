@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Mail;
+
 use App\Models\Barangay;
 use Illuminate\Http\Request;
 use App\Models\FireReports;
@@ -9,10 +14,8 @@ use App\Models\User;
 use App\Models\FireStation;
 use App\Models\CityAndMunicipality;
 use App\Models\BarangayFireAid;
-use Illuminate\Support\Facades\DB;
 use App\Mail\BarangayRejectionEmail;
-use Mail;
-use Illuminate\Support\Facades\Log;
+
 
 class BarangayWebController extends Controller
 {
@@ -53,14 +56,22 @@ class BarangayWebController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function registerView()
     {
     $citiesAndMunicipalities = CityAndMunicipality::all();
 
     return view('auth_pages.register_brgy', compact('citiesAndMunicipalities'));
     }
 
-    public function store(Request $request){
+    public function register(Request $request){
+
+    //     dd([
+    //     'env_key' => env('GOOGLE_MAPS_API_KEY'),
+    //     'config_key' => config('services.google.maps_key'), // If using config
+    //     'server_env' => $_ENV['GOOGLE_MAPS_API_KEY'] ?? 'Not set'
+    //     'app_name' => env('APP_NAME'),
+    // ]);
+
         $validated = $request->validate([
         'barangay_name' => 'required|string|max:255',
         'barangay_hall_address' => 'required|string',
@@ -69,19 +80,27 @@ class BarangayWebController extends Controller
         'lgu_id' => 'required|exists:cities_and_municipalities,id',
         'userFirstName' => 'required|string|max:255',
         'userLastName' => 'required|string|max:255',
+        'userContactNumber' => 'nullable|string|max:15', 
         'email' => 'required|email|unique:users,email',
         'id_image' => 'nullable|file|mimes:jpg,jpeg,png|max:6500',
         ]);
 
         // Handle image upload for barangay_proof
         if ($request->hasFile('barangay_legitimacy_proof')) {
+            \Log::info('Attempting to store proof file', [
+                'name' => $request->file('barangay_legitimacy_proof')->getClientOriginalName()
+            ]);
             $barangayProofPath = $request->file('barangay_legitimacy_proof')->store('legitimacy_proof', 'public');
+            \Log::info('File stored at: '.$barangayProofPath);
         }
 
         // Handle image upload for ID image
         if ($request->hasFile('id_image')) {
             $idImagePath = $request->file('id_image')->store('user_images', 'public');
         }
+
+        // Debug: Check if API key is loaded
+        \Log::info("Current GOOGLE_MAPS_API_KEY from .env: " . env('GOOGLE_MAPS_API_KEY'));
 
         $address = $validated['barangay_hall_address'];
         $geocodeData = $this->getCoordinatesByAddress($address);
@@ -92,11 +111,15 @@ class BarangayWebController extends Controller
 
         $latitude = $geocodeData['latitude'];
         $longitude = $geocodeData['longitude'];
+        // $latitude = 14.2833; 
+        // $longitude = 120.8833;
 
         // Fetch the selected City/Municipality and its Fire Station
         $city = CityAndMunicipality::find($validated['lgu_id']);
         $fireStation = $city->fireStation;
 
+        try {
+            DB::beginTransaction();
         $barangay = Barangay::create([
             'barangay_name' => $validated['barangay_name'],
             'barangay_hall_address' => $validated['barangay_hall_address'],
@@ -117,6 +140,7 @@ class BarangayWebController extends Controller
             'email' => $validated['email'],
             'password' => $adminPassword, 
             'id_image' => $idImagePath ?? null,
+            'userContactNumber' =>  $validated['userContactNumber'],
             'userRole' => 'Barangay',
             'userStatus' => 'Unverified',
         ]);
@@ -129,8 +153,15 @@ class BarangayWebController extends Controller
             'updated_at' => now()
         ]);
 
+        DB::commit();
         return redirect()->route('home')->with('success', 'Barangay registered successfully!');
     }
+    catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Registration failed: '.$e->getMessage());
+        return back()->withInput()->with('error', 'Registration failed. Please try again.');
+    }
+}
 
         /**
      * Function to get latitude and longitude based on the address
@@ -138,24 +169,39 @@ class BarangayWebController extends Controller
      * @param string $address
      * @return array
      */
-    private function getCoordinatesByAddress($address)
-    {
-
-        $apiKey = env('GOOGLE_MAPS_API_KEY');
-
+    private function getCoordinatesByAddress($address) {
+        $apiKey = 'AIzaSyAnst45VUe9XkXDduDBPmuPo7H3YmWDNJ4';
+        
+        // Debug 1: Check if API key exists
+        \Log::info("Google Maps API Key: " . ($apiKey ? "Exists" : "MISSING"));
+        
         $url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode($address) . "&key=" . $apiKey;
-
-        $response = file_get_contents($url);
-        $data = json_decode($response, true);
-
-        if ($data['status'] == 'OK') {
-            $latitude = $data['results'][0]['geometry']['location']['lat'];
-            $longitude = $data['results'][0]['geometry']['location']['lng'];
+        \Log::info("Geocoding API Request URL: " . $url); // Debug 2: Log full URL
+        
+        try {
+            $response = file_get_contents($url);
+            \Log::info("API Raw Response: " . $response); // Debug 3: Log raw response
             
-            return ['latitude' => $latitude, 'longitude' => $longitude];
+            $data = json_decode($response, true);
+            \Log::info("API Decoded Data:", $data); // Debug 4: Log decoded data
+            
+            if ($data['status'] != 'OK') {
+                \Log::error("Geocoding Failed - Status: " . $data['status']);
+                return ['latitude' => null, 'longitude' => null];
+            }
+            
+            $coordinates = [
+                'latitude' => $data['results'][0]['geometry']['location']['lat'],
+                'longitude' => $data['results'][0]['geometry']['location']['lng']
+            ];
+            
+            \Log::info("Geocoding Success:", $coordinates);
+            return $coordinates;
+            
+        } catch (\Exception $e) {
+            \Log::error("Geocoding Error: " . $e->getMessage());
+            return ['latitude' => null, 'longitude' => null];
         }
-
-        return ['latitude' => null, 'longitude' => null];
     }
 
     public function show($id) {
@@ -374,7 +420,10 @@ class BarangayWebController extends Controller
                         ->first();
 
                 if ($pending) {
-                    User::where('id', $pending->user_id)->update([
+                    $user = User::findOrFail($pending->user_id);
+                    
+                    // Update user status
+                    $user->update([
                         'userStatus' => 'Rejected',
                         'rejection_reason' => 'Barangay application rejected.',
                         'last_rejection_at' => now(),
@@ -382,14 +431,26 @@ class BarangayWebController extends Controller
                         'reapply_allowed' => true,
                     ]);
 
-                    $user = User::find($pending->user_id);
-                    $canReapply = $barangay->reapply_allowed;
+                    // =============================================
+                    // 4. [NEW CODE] TOKEN GENERATION AND STORAGE
+                    // =============================================
+                    $token = Str::random(64);
+                    DB::table('reapplication_tokens')->insert([
+                        'token' => $token,
+                        'user_id' => $user->id,
+                        'user_role' => 'barangay_admin',
+                        'rejection_reason' => $validated['rejection_reason'],
+                        'expires_at' => now()->addDays(7), // 7 days validity
+                        'created_at' => now(),
+                    ]);
+                    // =============================================
 
-                    // Send email notification
+                    // 5. Send email with token
                     Mail::to($user->email)->send(new BarangayRejectionEmail(
                         $barangay->barangay_name,
                         $validated['rejection_reason'],
-                        $canReapply
+                        true,
+                        $token
                     ));
                 }
             });
